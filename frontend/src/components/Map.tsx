@@ -10,6 +10,7 @@ import L from 'leaflet';
 import { surfSpots, SurfSpot } from '../data/spots';
 import SpotDetailsModal from './SpotDetailsModal';
 import MapLegend from './MapLegend';
+import WeatherIndicator from './WeatherIndicator';
 import weatherService from '../services/weatherService';
 
 // Create custom surf icons based on difficulty and conditions
@@ -329,10 +330,22 @@ const Map: React.FC = () => {
                       
                       <Typography variant="body2" sx={{ mb: 2 }}>{spot.description}</Typography>
                       
+                      {/* Live Weather Data */}
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                          🌊 Live Conditions
+                        </Typography>
+                        <WeatherIndicator 
+                          lat={spot.location.lat} 
+                          lng={spot.location.lng} 
+                          compact={false}
+                        />
+                      </Box>
+                      
                       {/* Basic conditions from spot data */}
                       <Box sx={{ mb: 2 }}>
                         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-                          🌊 Current Conditions
+                          📊 Static Conditions
                         </Typography>
                         <Typography variant="body2">
                           Swell: {spot.currentConditions.swellHeight}ft @ {spot.currentConditions.swellPeriod}s ({spot.currentConditions.swellDirection})
