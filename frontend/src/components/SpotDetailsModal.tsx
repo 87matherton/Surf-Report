@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { SurfSpot } from '../../data/spots';
+import WeatherDisplay from './WeatherDisplay';
 
 interface SpotDetailsModalProps {
   open: boolean;
@@ -26,7 +27,7 @@ const SpotDetailsModal: React.FC<SpotDetailsModalProps> = ({ open, onClose, spot
   if (!spot) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4">{spot.name}</Typography>
@@ -40,6 +41,13 @@ const SpotDetailsModal: React.FC<SpotDetailsModalProps> = ({ open, onClose, spot
       </DialogTitle>
       
       <DialogContent>
+        {/* Real-time Weather Data */}
+        <WeatherDisplay 
+          lat={spot.location.lat} 
+          lng={spot.location.lng} 
+          locationName={spot.name}
+        />
+        
         <Typography variant="body1" sx={{ mb: 3 }}>
           {spot.description}
         </Typography>

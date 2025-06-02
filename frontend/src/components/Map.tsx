@@ -7,14 +7,81 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { surfSpots, SurfSpot } from '../../data/spots';
 import SpotDetailsModal from './SpotDetailsModal';
+import MapLegend from './MapLegend';
+import WeatherIndicator from './WeatherIndicator';
 
-// Fix for default markers in Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+// Create custom surf icons based on difficulty and conditions
+const createSurfIcon = (difficulty: string, conditionsRating: string) => {
+  // Base colors for difficulty levels
+  const difficultyColors = {
+    'Beginner': '#4CAF50',      // Green
+    'Intermediate': '#FF9800',  // Orange  
+    'Advanced': '#F44336',      // Red
+    'Expert': '#9C27B0'         // Purple
+  };
+
+  // Border colors for conditions
+  const conditionColors = {
+    'Poor': '#757575',          // Grey
+    'Fair': '#FF9800',          // Orange
+    'Good': '#2196F3',          // Blue
+    'Excellent': '#4CAF50'      // Green
+  };
+
+  const baseColor = difficultyColors[difficulty as keyof typeof difficultyColors] || '#2196F3';
+  const borderColor = conditionColors[conditionsRating as keyof typeof conditionColors] || '#757575';
+
+  // Create SVG icon with wave symbol
+  const svgIcon = `
+    <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.3"/>
+        </filter>
+      </defs>
+      <!-- Outer circle (condition indicator) -->
+      <circle cx="20" cy="20" r="18" fill="${borderColor}" filter="url(#shadow)"/>
+      <!-- Inner circle (difficulty indicator) -->
+      <circle cx="20" cy="20" r="14" fill="${baseColor}"/>
+      <!-- Wave symbol -->
+      <path d="M10 20 Q15 15 20 20 T30 20" stroke="white" stroke-width="2" fill="none"/>
+      <path d="M8 24 Q13 19 18 24 T28 24" stroke="white" stroke-width="1.5" fill="none" opacity="0.8"/>
+      <!-- Difficulty indicator dots -->
+      ${difficulty === 'Expert' ? '<circle cx="20" cy="12" r="1.5" fill="white"/>' : ''}
+      ${(['Advanced', 'Expert'].includes(difficulty)) ? '<circle cx="17" cy="12" r="1" fill="white"/>' : ''}
+      ${(['Intermediate', 'Advanced', 'Expert'].includes(difficulty)) ? '<circle cx="23" cy="12" r="1" fill="white"/>' : ''}
+    </svg>
+  `;
+
+  return L.divIcon({
+    html: svgIcon,
+    className: 'custom-surf-icon',
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+  });
+};
+
+// Add CSS for the custom icons
+const iconStyles = `
+  .custom-surf-icon {
+    background: none !important;
+    border: none !important;
+  }
+  .custom-surf-icon svg {
+    transition: transform 0.2s ease;
+  }
+  .custom-surf-icon:hover svg {
+    transform: scale(1.1);
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.innerText = iconStyles;
+  document.head.appendChild(styleSheet);
+}
 
 const defaultCenter = { lat: 37.5, lng: -122.3 };
 
@@ -61,7 +128,24 @@ const Map: React.FC = () => {
   return (
     <>
       <Box sx={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ p: 2 }}>
+        {/* Header with title */}
+        <Box sx={{ 
+          p: 2, 
+          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+          color: 'white',
+          textAlign: 'center',
+          boxShadow: 2
+        }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
+            🌊 WaveCheck 🏄‍♂️
+          </Typography>
+          <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
+            Find the perfect surf conditions near you
+          </Typography>
+        </Box>
+
+        {/* Search bar */}
+        <Box sx={{ p: 2, backgroundColor: 'grey.50' }}>
           <Autocomplete
             freeSolo
             options={surfSpots.map((spot) => spot.name)}
@@ -80,11 +164,22 @@ const Map: React.FC = () => {
                 fullWidth
                 variant="outlined"
                 placeholder="Search surf spots..."
+                sx={{ 
+                  backgroundColor: 'white',
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': {
+                      borderColor: '#2196F3',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#2196F3',
+                    },
+                  }
+                }}
                 InputProps={{
                   ...params.InputProps,
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon />
+                      <SearchIcon sx={{ color: '#2196F3' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -113,6 +208,7 @@ const Map: React.FC = () => {
                 <Marker
                   key={spot.id}
                   position={[spot.location.lat, spot.location.lng]}
+                  icon={createSurfIcon(spot.difficulty, spot.conditionsRating)}
                   eventHandlers={{
                     add: (e) => {
                       if (selectedSpot === spot.id) {
@@ -122,11 +218,24 @@ const Map: React.FC = () => {
                   }}
                 >
                   <Popup>
-                    <Paper sx={{ p: 1, maxWidth: 220 }}>
+                    <Paper sx={{ p: 1, maxWidth: 280 }}>
                       <Typography variant="h6">{spot.name}</Typography>
                       <Typography variant="body2">Today's Conditions: <b>{spot.conditionsRating}</b></Typography>
                       <Typography variant="body2">Difficulty: {spot.difficulty}</Typography>
                       <Typography variant="body2" sx={{ mb: 2 }}>{spot.description}</Typography>
+                      
+                      {/* Live Weather Data */}
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                          🌊 Live Conditions
+                        </Typography>
+                        <WeatherIndicator 
+                          lat={spot.location.lat} 
+                          lng={spot.location.lng} 
+                          compact={false}
+                        />
+                      </Box>
+                      
                       <Button
                         variant="contained"
                         color="primary"
@@ -143,6 +252,7 @@ const Map: React.FC = () => {
               ))}
             </MapContainer>
           </div>
+          <MapLegend />
         </Box>
       </Box>
       
