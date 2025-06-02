@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Box, Typography, Paper, TextField, InputAdornment, Button, Autocomplete } from '@mui/material';
+import { Box, Typography, Paper, TextField, InputAdornment, Button, Autocomplete, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ExploreIcon from '@mui/icons-material/Explore';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { surfSpots, SurfSpot } from '../../data/spots';
 import SpotDetailsModal from './SpotDetailsModal';
 import MapLegend from './MapLegend';
 import WeatherIndicator from './WeatherIndicator';
+import WeatherService from '../services/weatherService';
 
 // Create custom surf icons based on difficulty and conditions
-const createSurfIcon = (difficulty: string, conditionsRating: string) => {
+const createSurfIcon = (difficulty: string, conditionsRating: string, isFavorite: boolean = false, qualityScore?: number) => {
   // Base colors for difficulty levels
   const difficultyColors = {
     'Beginner': '#4CAF50',      // Green
@@ -31,7 +34,17 @@ const createSurfIcon = (difficulty: string, conditionsRating: string) => {
   const baseColor = difficultyColors[difficulty as keyof typeof difficultyColors] || '#2196F3';
   const borderColor = conditionColors[conditionsRating as keyof typeof conditionColors] || '#757575';
 
-  // Create SVG icon with wave symbol
+  // Quality score color
+  const getQualityColor = (score: number) => {
+    if (score >= 8) return '#4CAF50'; // Green - Excellent
+    if (score >= 6) return '#2196F3'; // Blue - Good
+    if (score >= 4) return '#FF9800'; // Orange - Fair
+    return '#F44336'; // Red - Poor
+  };
+
+  const qualityColor = qualityScore ? getQualityColor(qualityScore) : borderColor;
+
+  // Create SVG icon with wave symbol, favorite indicator, and quality score
   const svgIcon = `
     <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -39,13 +52,27 @@ const createSurfIcon = (difficulty: string, conditionsRating: string) => {
           <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.3"/>
         </filter>
       </defs>
-      <!-- Outer circle (condition indicator) -->
-      <circle cx="20" cy="20" r="18" fill="${borderColor}" filter="url(#shadow)"/>
+      <!-- Outer circle (quality/condition indicator) -->
+      <circle cx="20" cy="20" r="18" fill="${qualityColor}" filter="url(#shadow)"/>
       <!-- Inner circle (difficulty indicator) -->
       <circle cx="20" cy="20" r="14" fill="${baseColor}"/>
+      
+      <!-- Favorite heart indicator -->
+      ${isFavorite ? `
+        <circle cx="30" cy="10" r="6" fill="#E91E63" stroke="white" stroke-width="1"/>
+        <path d="M27 8.5l1.5 1.5 1.5-1.5c0.5-0.5 1.3-0.5 1.8 0s0.5 1.3 0 1.8l-3.3 3.3-3.3-3.3c-0.5-0.5-0.5-1.3 0-1.8s1.3-0.5 1.8 0z" fill="white"/>
+      ` : ''}
+      
       <!-- Wave symbol -->
       <path d="M10 20 Q15 15 20 20 T30 20" stroke="white" stroke-width="2" fill="none"/>
       <path d="M8 24 Q13 19 18 24 T28 24" stroke="white" stroke-width="1.5" fill="none" opacity="0.8"/>
+      
+      <!-- Quality score indicator -->
+      ${qualityScore ? `
+        <circle cx="10" cy="10" r="6" fill="rgba(0,0,0,0.7)"/>
+        <text x="10" y="14" text-anchor="middle" font-size="8" font-weight="bold" fill="white">${qualityScore.toFixed(1)}</text>
+      ` : ''}
+      
       <!-- Difficulty indicator dots -->
       ${difficulty === 'Expert' ? '<circle cx="20" cy="12" r="1.5" fill="white"/>' : ''}
       ${(['Advanced', 'Expert'].includes(difficulty)) ? '<circle cx="17" cy="12" r="1" fill="white"/>' : ''}
@@ -92,11 +119,62 @@ const Map: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSpotForModal, setSelectedSpotForModal] = useState<SurfSpot | null>(null);
   const [mapKey, setMapKey] = useState(() => Math.random().toString(36).substr(2, 9));
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [qualityScores, setQualityScores] = useState<{ [key: string]: number }>({});
   const mapRef = useRef<any>(null);
+  const weatherService = WeatherService;
 
   const filteredSpots = surfSpots.filter(spot =>
     spot.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Load favorites on component mount
+  useEffect(() => {
+    const loadFavorites = () => {
+      const savedFavorites = weatherService.getFavoriteSpots();
+      setFavorites(savedFavorites);
+    };
+    loadFavorites();
+  }, [weatherService]);
+
+  // Load quality scores for all spots
+  useEffect(() => {
+    const loadQualityScores = async () => {
+      const scores: { [key: string]: number } = {};
+      
+      for (const spot of surfSpots) {
+        try {
+          const enhancedData = await weatherService.getEnhancedSurfData(
+            spot.id, 
+            spot.location.lat, 
+            spot.location.lng
+          );
+          scores[spot.id] = enhancedData.qualityScore;
+        } catch (error) {
+          console.error(`Error loading quality score for ${spot.name}:`, error);
+          scores[spot.id] = 5.0; // Default score
+        }
+      }
+      
+      setQualityScores(scores);
+    };
+    
+    loadQualityScores();
+  }, [weatherService]);
+
+  // Toggle favorite status
+  const toggleFavorite = (spotId: string) => {
+    const newFavorites = weatherService.toggleFavorite(spotId) 
+      ? [...favorites, spotId]
+      : favorites.filter(id => id !== spotId);
+    
+    setFavorites(newFavorites);
+  };
+
+  // Check if spot is favorite
+  const isFavorite = (spotId: string) => {
+    return favorites.includes(spotId);
+  };
 
   // Force complete remount with unique key on every mount to prevent double initialization
   useEffect(() => {
@@ -208,7 +286,7 @@ const Map: React.FC = () => {
                 <Marker
                   key={spot.id}
                   position={[spot.location.lat, spot.location.lng]}
-                  icon={createSurfIcon(spot.difficulty, spot.conditionsRating)}
+                  icon={createSurfIcon(spot.difficulty, spot.conditionsRating, isFavorite(spot.id), qualityScores[spot.id])}
                   eventHandlers={{
                     add: (e) => {
                       if (selectedSpot === spot.id) {
@@ -219,9 +297,43 @@ const Map: React.FC = () => {
                 >
                   <Popup>
                     <Paper sx={{ p: 1, maxWidth: 280 }}>
-                      <Typography variant="h6">{spot.name}</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="h6">{spot.name}</Typography>
+                        <IconButton 
+                          onClick={() => toggleFavorite(spot.id)}
+                          color={isFavorite(spot.id) ? 'error' : 'default'}
+                          size="small"
+                        >
+                          {isFavorite(spot.id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                        </IconButton>
+                      </Box>
+                      
                       <Typography variant="body2">Today's Conditions: <b>{spot.conditionsRating}</b></Typography>
                       <Typography variant="body2">Difficulty: {spot.difficulty}</Typography>
+                      
+                      {/* Quality Score Display */}
+                      {qualityScores[spot.id] && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <Typography variant="body2" sx={{ mr: 1 }}>
+                            Surf Quality:
+                          </Typography>
+                          <Box 
+                            sx={{ 
+                              px: 1, 
+                              py: 0.5, 
+                              borderRadius: 1,
+                              backgroundColor: qualityScores[spot.id] >= 7 ? '#4CAF50' : 
+                                             qualityScores[spot.id] >= 5 ? '#FF9800' : '#F44336',
+                              color: 'white',
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {qualityScores[spot.id].toFixed(1)}/10
+                          </Box>
+                        </Box>
+                      )}
+                      
                       <Typography variant="body2" sx={{ mb: 2 }}>{spot.description}</Typography>
                       
                       {/* Live Weather Data */}

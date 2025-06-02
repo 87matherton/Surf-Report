@@ -105,6 +105,33 @@ export const WaveChart: React.FC<WaveChartProps> = ({
     return isMetric ? currentWaveHeight : currentWaveHeight * 3.28084;
   }, [currentWaveHeight, isMetric]);
 
+  // Calculate Y-axis domain based on converted data
+  const yAxisDomain = useMemo(() => {
+    if (convertedWaveData.length === 0) return [0, 10];
+    
+    const heights = convertedWaveData.map(point => point.height);
+    const minHeight = Math.min(...heights);
+    const maxHeight = Math.max(...heights);
+    
+    // Ensure we have a reasonable range
+    const range = maxHeight - minHeight;
+    const safeRange = range > 0.1 ? range : 1; // Minimum range of 1 unit
+    
+    // Add padding (20% of range, minimum 0.5 units)
+    const padding = Math.max(safeRange * 0.2, 0.5);
+    const domainMin = Math.max(0, minHeight - padding);
+    const domainMax = maxHeight + padding;
+    
+    // Round to clean numbers for better display
+    const roundedMin = Math.floor(domainMin * 10) / 10;
+    const roundedMax = Math.ceil(domainMax * 10) / 10;
+    
+    const domain = [roundedMin, roundedMax];
+    console.log(`📊 Wave Y-axis domain (${isMetric ? 'metric' : 'imperial'}):`, domain);
+    
+    return domain;
+  }, [convertedWaveData, isMetric]);
+
   // Find peak and low wave points
   const extremePoints = convertedWaveData.filter(point => point.type);
   
@@ -168,11 +195,12 @@ export const WaveChart: React.FC<WaveChartProps> = ({
         <Box sx={{ width: '100%', height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
+              key={`wave-chart-${isMetric ? 'metric' : 'imperial'}`}
               data={convertedWaveData}
               margin={{
                 top: 20,
                 right: 30,
-                left: 20,
+                left: 60,
                 bottom: 30
               }}
             >
@@ -198,9 +226,12 @@ export const WaveChart: React.FC<WaveChartProps> = ({
               />
               
               <YAxis 
+                domain={yAxisDomain}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+                tickFormatter={(value) => `${value.toFixed(1)}`}
+                width={50}
                 label={{ 
                   value: unitLabel, 
                   angle: -90, 

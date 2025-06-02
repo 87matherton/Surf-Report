@@ -74,8 +74,8 @@ export function useForecastData(lat: number, lng: number): UseForecastDataResult
           }),
           type: event.type,
           height: event.type === 'high' ? 
-            4.5 + Math.random() * 2.5 : 
-            0.8 + Math.random() * 1.5
+            1.8 + Math.random() * 0.7 :  // High: 1.8-2.5m (6-8ft)
+            0.3 + Math.random() * 0.9    // Low: 0.3-1.2m (1-4ft)
         });
       });
       

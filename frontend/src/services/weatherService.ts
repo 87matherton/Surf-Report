@@ -1,6 +1,27 @@
 import axios from 'axios';
 import { API_CONFIG } from '../config/api';
 
+// Interface for Spitcast forecast data
+interface SpitcastForecast {
+  date: string;
+  day: string;
+  hour: string;
+  size_ft: number;
+  shape_full: string;
+  shape: string; // 'poor', 'poor-fair', 'fair', 'good'
+  size: number;
+  latitude: number;
+  longitude: number;
+  spot_id: number;
+  spot_name: string;
+  warnings?: any[];
+  shape_detail?: {
+    swell?: string;
+    wind?: string;
+    tide?: string;
+  };
+}
+
 export interface WeatherData {
   temperature: number;
   feelsLike: number;
@@ -97,12 +118,11 @@ class WeatherService {
     }
 
     try {
-      const [weatherData, marineData] = await Promise.all([
+      const [weatherData, marineData, tideData] = await Promise.all([
         this.fetchWeatherData(lat, lng),
-        this.fetchMarineData(lat, lng)
+        this.fetchMarineData(lat, lng),
+        this.fetchTideData(lat, lng)
       ]);
-
-      const tideData = this.generateTideData(); // For now, generate mock tide data
       
       const combinedData: CombinedWeatherData = {
         weather: weatherData,
@@ -216,11 +236,204 @@ class WeatherService {
     }
   }
 
-  private generateTideData(): TideData {
+  private async fetchTideData(lat: number, lng: number): Promise<TideData> {
+    try {
+      // Find closest NOAA tide station
+      const tideStation = this.findClosestTideStation(lat, lng);
+      console.log(`🌊 Using NOAA tide station: ${tideStation.name} (${tideStation.stationId})`);
+      
+      // Fetch real tide predictions from NOAA
+      const tideData = await this.fetchNOAATideData(tideStation.stationId);
+      return tideData;
+    } catch (error) {
+      console.warn('Failed to fetch NOAA tide data, using fallback data:', error);
+      // Fallback to synthetic data if NOAA API fails
+      return this.generateSyntheticTideData();
+    }
+  }
+
+  private findClosestTideStation(lat: number, lng: number) {
+    const stations = API_CONFIG.TIDE_STATIONS;
+    let closestStation = stations.mavericks; // Default fallback
+    let closestDistance = Infinity;
+
+    // Calculate distance to each station using simple Euclidean distance
+    // (Good enough for our purposes since all stations are in California)
+    Object.values(stations).forEach(station => {
+      const distance = Math.sqrt(
+        Math.pow(lat - station.lat, 2) + Math.pow(lng - station.lng, 2)
+      );
+      
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestStation = station;
+      }
+    });
+
+    return closestStation;
+  }
+
+  private async fetchNOAATideData(stationId: string): Promise<TideData> {
+    const url = API_CONFIG.NOAA_TIDES_API_URL;
+    const params = {
+      station: stationId,
+      product: 'predictions',
+      datum: 'MLLW',
+      time_zone: 'lst_ldt',
+      units: 'metric',
+      format: 'json',
+      range: '24' // Get 24 hours of data
+    };
+
+    console.log(`🌊 Fetching NOAA tide data for station ${stationId}`);
+
+    const response = await fetch(`${url}?${new URLSearchParams(params)}`);
+    if (!response.ok) {
+      throw new Error(`NOAA API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('🌊 Raw NOAA tide response:', data);
+
+    if (!data.predictions || !Array.isArray(data.predictions)) {
+      throw new Error('Invalid NOAA tide API response format');
+    }
+
+    return this.processNOAATideData(data.predictions);
+  }
+
+  private processNOAATideData(predictions: Array<{t: string, v: string}>): TideData {
     const now = new Date();
-    const currentHeight = 3.5 + Math.sin(Date.now() / 1000000) * 2.5; // Current tide height between 1-6m
     
-    // Generate 12 hours of tide data (every 30 minutes = 24 data points)
+    // Process the tide predictions for chart display
+    const chartData: Array<{
+      time: string;
+      timeLabel: string;
+      height: number;
+      type?: 'high' | 'low' | null;
+    }> = [];
+
+    // Find current time index and get 12 hours of data centered around now
+    let currentIndex = 0;
+    const currentTime = now.getTime();
+    
+    // Find closest time point to current time
+    predictions.forEach((prediction, index) => {
+      const predictionTime = new Date(prediction.t).getTime();
+      const currentClosest = new Date(predictions[currentIndex].t).getTime();
+      
+      if (Math.abs(predictionTime - currentTime) < Math.abs(currentClosest - currentTime)) {
+        currentIndex = index;
+      }
+    });
+
+    // Get 12 hours of data (6 hours before and after current time)
+    const startIndex = Math.max(0, currentIndex - 36); // 36 points = 6 hours (6min intervals)
+    const endIndex = Math.min(predictions.length, startIndex + 72); // 72 points = 12 hours
+
+    for (let i = startIndex; i < endIndex; i += 6) { // Take every 6th point (30-minute intervals)
+      const prediction = predictions[i];
+      if (!prediction) continue;
+
+      const time = new Date(prediction.t);
+      const height = parseFloat(prediction.v);
+
+      // Determine if this is a high or low tide
+      let type: 'high' | 'low' | null = null;
+      
+      // Look at neighboring points to determine extremes
+      if (i > startIndex && i < endIndex - 6) {
+        const prevHeight = parseFloat(predictions[i - 6]?.v || prediction.v);
+        const nextHeight = parseFloat(predictions[i + 6]?.v || prediction.v);
+        
+        if (height > prevHeight && height > nextHeight && height > 1.0) {
+          type = 'high';
+        } else if (height < prevHeight && height < nextHeight && height < 0.5) {
+          type = 'low';
+        }
+      }
+
+      chartData.push({
+        time: time.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: false
+        }),
+        timeLabel: time.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        height: Math.round(height * 100) / 100,
+        type
+      });
+    }
+
+    // Find current tide height and status
+    const currentPrediction = predictions[currentIndex];
+    const currentHeight = parseFloat(currentPrediction.v);
+    
+    // Determine if tide is rising or falling
+    const nextPrediction = predictions[currentIndex + 1];
+    const nextHeight = nextPrediction ? parseFloat(nextPrediction.v) : currentHeight;
+    const tideDirection = nextHeight > currentHeight ? 'Rising' : 'Falling';
+
+    // Extract next few high/low tides for summary
+    const nextTides: Array<{
+      time: string;
+      type: 'high' | 'low';
+      height: number;
+    }> = [];
+
+    // Find the next 4 tide extremes
+    for (let i = currentIndex; i < Math.min(predictions.length - 6, currentIndex + 144) && nextTides.length < 4; i += 6) {
+      if (i + 6 >= predictions.length) break;
+      
+      const prev = parseFloat(predictions[i - 6]?.v || predictions[i].v);
+      const curr = parseFloat(predictions[i].v);
+      const next = parseFloat(predictions[i + 6]?.v || predictions[i].v);
+      
+      if (curr > prev && curr > next && curr > 1.0) {
+        nextTides.push({
+          time: new Date(predictions[i].t).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }),
+          type: 'high',
+          height: Math.round(curr * 100) / 100
+        });
+      } else if (curr < prev && curr < next && curr < 0.5) {
+        nextTides.push({
+          time: new Date(predictions[i].t).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }),
+          type: 'low',
+          height: Math.round(curr * 100) / 100
+        });
+      }
+    }
+
+    console.log(`🌊 Processed ${chartData.length} tide data points from NOAA`);
+    console.log(`🌊 Current tide: ${currentHeight.toFixed(2)}m and ${tideDirection}`);
+    console.log(`🌊 Next ${nextTides.length} tide extremes found`);
+
+    return {
+      current: tideDirection,
+      currentHeight: Math.round(currentHeight * 100) / 100,
+      next: nextTides,
+      chartData
+    };
+  }
+
+  private generateSyntheticTideData(): TideData {
+    // Keep the existing synthetic method as fallback
+    const now = new Date();
+    // FIXED: Use realistic California tide heights (0.5-2.5m) to match NOAA data scale
+    const currentHeight = 1.5 + Math.sin(Date.now() / 1000000) * 1.0; // 0.5-2.5m range
+    
     const chartData: Array<{
       time: string;
       timeLabel: string;
@@ -234,75 +447,52 @@ class WeatherService {
       height: number;
     }> = [];
     
-    // Tide cycle: ~12.5 hours for full cycle (high to high)
-    // Generate realistic sine wave pattern
+    // Generate 12 hours of synthetic tide data as fallback
     for (let i = 0; i < 24; i++) {
-      const timeOffset = i * 30 * 60 * 1000; // 30 minutes in milliseconds
+      const timeOffset = i * 30 * 60 * 1000;
       const futureTime = new Date(now.getTime() + timeOffset);
       
-      // Create realistic tide pattern (sine wave with some randomness)
-      const tidePhase = (Date.now() + timeOffset) / 1000000; // Phase offset
-      const baseHeight = 3.5 + Math.sin(tidePhase) * 2.2; // Base sine wave
-      const randomVariation = (Math.random() - 0.5) * 0.8; // Add some realistic variation
-      const height = Math.max(0.5, Math.min(6.5, baseHeight + randomVariation));
-      
-      // Determine if this is a high or low tide point
-      const prevHeight = i > 0 ? chartData[i - 1].height : height;
-      const nextPhase = tidePhase + 0.1;
-      const nextHeight = 3.5 + Math.sin(nextPhase) * 2.2;
+      const tidePhase = (Date.now() + timeOffset) / 1000000;
+      // FIXED: Use realistic tide amplitude (1.5m ± 1.0m = 0.5-2.5m range)
+      const baseHeight = 1.5 + Math.sin(tidePhase) * 1.0; // Realistic California tides
+      const randomVariation = (Math.random() - 0.5) * 0.3; // Smaller variation
+      const height = Math.max(0.3, Math.min(2.8, baseHeight + randomVariation)); // Realistic limits
       
       let type: 'high' | 'low' | null = null;
-      
-      // Detect tide extremes (simplified detection)
       if (i > 0 && i < 23) {
-        const isLocalMax = height > prevHeight && height > nextHeight;
-        const isLocalMin = height < prevHeight && height < nextHeight;
+        const prevHeight = chartData[i - 1]?.height || height;
+        const nextPhase = tidePhase + 0.1;
+        const nextHeight = 1.5 + Math.sin(nextPhase) * 1.0;
         
-        if (isLocalMax && height > 4.5) type = 'high';
-        if (isLocalMin && height < 2.5) type = 'low';
+        // FIXED: Use realistic thresholds for tide extremes
+        if (height > prevHeight && height > nextHeight && height > 2.0) type = 'high'; // 2m+ for high
+        if (height < prevHeight && height < nextHeight && height < 1.0) type = 'low';  // 1m- for low
       }
       
-      const timeStr = futureTime.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: false
-      });
-      
-      const timeLabel = futureTime.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      
       chartData.push({
-        time: timeStr,
-        timeLabel,
+        time: futureTime.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: false
+        }),
+        timeLabel: futureTime.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
         height: parseFloat(height.toFixed(1)),
         type
       });
       
-      // Collect high/low tide times for the summary
       if (type && nextTides.length < 4) {
         nextTides.push({
-          time: timeLabel,
-          type,
-          height: parseFloat(height.toFixed(1))
-        });
-      }
-    }
-    
-    // If no extremes were detected, add some manually for demo purposes
-    if (nextTides.length === 0) {
-      for (let i = 1; i <= 4; i++) {
-        const tideTime = new Date(now.getTime() + (i * 3 * 60 * 60 * 1000)); // Every 3 hours
-        nextTides.push({
-          time: tideTime.toLocaleTimeString('en-US', { 
+          time: futureTime.toLocaleTimeString('en-US', { 
             hour: 'numeric', 
             minute: '2-digit',
             hour12: true 
           }),
-          type: (i % 2 === 1 ? 'high' : 'low') as 'high' | 'low',
-          height: i % 2 === 1 ? 5.2 + Math.random() * 1 : 1.8 + Math.random() * 1.5
+          type,
+          height: parseFloat(height.toFixed(1))
         });
       }
     }
@@ -410,6 +600,188 @@ class WeatherService {
     this.cache.clear();
   }
 
+  // SPITCAST API INTEGRATION
+  
+  // Fetch Spitcast forecast data
+  async fetchSpitcastForecast(spotId: string): Promise<SpitcastForecast[] | null> {
+    try {
+      const spitcastSpot = API_CONFIG.SPITCAST_SPOTS[spotId as keyof typeof API_CONFIG.SPITCAST_SPOTS];
+      if (!spitcastSpot) {
+        console.warn(`No Spitcast mapping found for spot ${spotId}`);
+        return null;
+      }
+
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      const day = today.getDate();
+
+      const url = `${API_CONFIG.SPITCAST_API_URL}/spot_forecast/${spitcastSpot.spitcastId}/${year}/${month}/${day}`;
+      
+      console.log(`Fetching Spitcast data from: ${url}`);
+      
+      const response = await axios.get(url, {
+        timeout: 10000,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'WaveCheck-App/1.0'
+        }
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        return response.data as SpitcastForecast[];
+      }
+      
+      console.log('Spitcast API returned non-array data:', response.data);
+      return null;
+    } catch (error) {
+      console.error('Error fetching Spitcast data:', error);
+      return null;
+    }
+  }
+
+  // Calculate surf quality score (1-10) based on multiple factors
+  calculateSurfQualityScore(
+    waveHeight: number,
+    wavePeriod: number,
+    windSpeed: number,
+    windDirection: number,
+    waveDirection: number,
+    spitcastShape?: string
+  ): number {
+    let score = 5.0; // Base score
+
+    // Wave height scoring (optimal 3-8ft for most spots)
+    if (waveHeight >= 3 && waveHeight <= 8) {
+      score += 2.0;
+    } else if (waveHeight >= 2 && waveHeight <= 10) {
+      score += 1.0;
+    } else if (waveHeight >= 1 && waveHeight <= 12) {
+      score += 0.5;
+    } else {
+      score -= 1.0;
+    }
+
+    // Wave period scoring (longer period = better quality)
+    if (wavePeriod >= 12) {
+      score += 2.0;
+    } else if (wavePeriod >= 10) {
+      score += 1.5;
+    } else if (wavePeriod >= 8) {
+      score += 1.0;
+    } else if (wavePeriod >= 6) {
+      score += 0.5;
+    } else {
+      score -= 1.0;
+    }
+
+    // Wind scoring (light offshore is best)
+    const windAngleDiff = Math.abs(((windDirection - waveDirection + 180) % 360) - 180);
+    
+    if (windSpeed <= 5) {
+      score += 1.5; // Light wind
+    } else if (windSpeed <= 10 && windAngleDiff > 90) {
+      score += 1.0; // Light offshore
+    } else if (windSpeed <= 15 && windAngleDiff > 90) {
+      score += 0.5; // Moderate offshore
+    } else if (windSpeed > 20) {
+      score -= 2.0; // Strong wind (poor conditions)
+    } else if (windAngleDiff < 45) {
+      score -= 1.0; // Onshore wind
+    }
+
+    // Spitcast shape bonus (if available)
+    if (spitcastShape) {
+      const shapeScore = this.getSpitcastShapeScore(spitcastShape);
+      score += shapeScore;
+    }
+
+    // Ensure score is between 1 and 10
+    return Math.max(1, Math.min(10, Math.round(score * 10) / 10));
+  }
+
+  private getSpitcastShapeScore(shape: string): number {
+    const shapeScores: { [key: string]: number } = {
+      'poor': -1.5,
+      'poor-fair': -0.5,
+      'fair': 0.0,
+      'fair-good': 0.5,
+      'good': 1.0,
+      'good-epic': 1.5,
+      'epic': 2.0
+    };
+    
+    return shapeScores[shape.toLowerCase()] || 0;
+  }
+
+  // Get enhanced surf data with Spitcast and quality scoring
+  async getEnhancedSurfData(spotId: string, lat: number, lng: number): Promise<{
+    spitcast: SpitcastForecast[] | null;
+    qualityScore: number;
+    recommendation: string;
+    conditions: any;
+  }> {
+    try {
+      // Fetch current weather/marine data
+      const weatherData = await this.getWeatherData(lat, lng);
+      
+      // Fetch Spitcast data
+      const spitcastData = await this.fetchSpitcastForecast(spotId);
+      
+      // Calculate quality score
+      const qualityScore = this.calculateSurfQualityScore(
+        weatherData.marine.waveHeight,
+        weatherData.marine.wavePeriod,
+        weatherData.weather.windSpeed,
+        weatherData.weather.windDirection,
+        weatherData.marine.waveDirection,
+        spitcastData?.[0]?.shape
+      );
+
+      // Generate recommendation
+      const recommendation = this.generateSurfRecommendation(qualityScore, weatherData.marine.waveHeight);
+
+      return {
+        spitcast: spitcastData,
+        qualityScore,
+        recommendation,
+        conditions: {
+          waveHeight: weatherData.marine.waveHeight,
+          wavePeriod: weatherData.marine.wavePeriod,
+          windSpeed: weatherData.weather.windSpeed,
+          windDirection: weatherData.weather.windDirection,
+          temperature: weatherData.weather.temperature
+        }
+      };
+    } catch (error) {
+      console.error('Error getting enhanced surf data:', error);
+      return {
+        spitcast: null,
+        qualityScore: 5.0,
+        recommendation: 'Check local conditions',
+        conditions: {}
+      };
+    }
+  }
+
+  private generateSurfRecommendation(score: number, waveHeight: number): string {
+    if (score >= 8.5) {
+      return "🔥 Epic conditions! Drop everything and surf!";
+    } else if (score >= 7.5) {
+      return "🏄‍♂️ Excellent surf! Great session ahead!";
+    } else if (score >= 6.5) {
+      return "👍 Good conditions for a surf session";
+    } else if (score >= 5.5) {
+      return "🌊 Fair conditions, worth checking out";
+    } else if (score >= 4.0) {
+      return "📚 Better for practice or longboarding";
+    } else if (waveHeight < 1) {
+      return "📖 Flat day - time to read surf magazines";
+    } else {
+      return "☕ Grab a coffee and wait for better conditions";
+    }
+  }
+
   // Method to get 5-day forecast with tide data for calendar display
   async getFiveDayForecast(lat: number, lng: number): Promise<any[]> {
     try {
@@ -482,9 +854,10 @@ class WeatherService {
           hour12: true
         }),
         type: event.type,
+        // FIXED: Use realistic California tide heights to match NOAA data scale
         height: event.type === 'high' ? 
-          4.5 + Math.random() * 2.5 : 
-          0.8 + Math.random() * 1.5
+          1.8 + Math.random() * 0.7 :  // High: 1.8-2.5m (6-8ft)
+          0.3 + Math.random() * 0.9    // Low: 0.3-1.2m (1-4ft) 
       });
     });
     
@@ -794,6 +1167,130 @@ class WeatherService {
     console.log(`📊 Time range: ${processedData[0]?.timeLabel} to ${processedData[processedData.length - 1]?.timeLabel}`);
     
     return processedData;
+  }
+
+  // FAVORITES MANAGEMENT
+  
+  private getFavoritesKey(): string {
+    return 'wavecheck_favorite_spots';
+  }
+
+  // Get user's favorite spots from localStorage
+  getFavoriteSpots(): string[] {
+    try {
+      const favorites = localStorage.getItem(this.getFavoritesKey());
+      return favorites ? JSON.parse(favorites) : [];
+    } catch (error) {
+      console.error('Error reading favorites from localStorage:', error);
+      return [];
+    }
+  }
+
+  // Add a spot to favorites
+  addToFavorites(spotId: string): boolean {
+    try {
+      const favorites = this.getFavoriteSpots();
+      if (!favorites.includes(spotId)) {
+        favorites.push(spotId);
+        localStorage.setItem(this.getFavoritesKey(), JSON.stringify(favorites));
+        return true;
+      }
+      return false; // Already in favorites
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      return false;
+    }
+  }
+
+  // Remove a spot from favorites
+  removeFromFavorites(spotId: string): boolean {
+    try {
+      const favorites = this.getFavoriteSpots();
+      const index = favorites.indexOf(spotId);
+      if (index > -1) {
+        favorites.splice(index, 1);
+        localStorage.setItem(this.getFavoritesKey(), JSON.stringify(favorites));
+        return true;
+      }
+      return false; // Not in favorites
+    } catch (error) {
+      console.error('Error removing from favorites:', error);
+      return false;
+    }
+  }
+
+  // Check if a spot is in favorites
+  isFavorite(spotId: string): boolean {
+    return this.getFavoriteSpots().includes(spotId);
+  }
+
+  // Toggle favorite status
+  toggleFavorite(spotId: string): boolean {
+    if (this.isFavorite(spotId)) {
+      return this.removeFromFavorites(spotId);
+    } else {
+      return this.addToFavorites(spotId);
+    }
+  }
+
+  // Clear all favorites
+  clearFavorites(): void {
+    try {
+      localStorage.removeItem(this.getFavoritesKey());
+    } catch (error) {
+      console.error('Error clearing favorites:', error);
+    }
+  }
+
+  // Get favorites with enhanced data
+  async getFavoritesWithData(): Promise<Array<{
+    spotId: string;
+    qualityScore: number;
+    recommendation: string;
+    conditions: any;
+    spitcast: SpitcastForecast[] | null;
+  }>> {
+    const favoriteSpots = this.getFavoriteSpots();
+    const favoritesData: Array<{
+      spotId: string;
+      qualityScore: number;
+      recommendation: string;
+      conditions: any;
+      spitcast: SpitcastForecast[] | null;
+    }> = [];
+
+    for (const spotId of favoriteSpots) {
+      try {
+        // Get coordinates for the spot (you'd need to map these)
+        const spotCoords = this.getSpotCoordinates(spotId);
+        if (spotCoords) {
+          const enhancedData = await this.getEnhancedSurfData(spotId, spotCoords.lat, spotCoords.lng);
+          favoritesData.push({
+            spotId,
+            qualityScore: enhancedData.qualityScore,
+            recommendation: enhancedData.recommendation,
+            conditions: enhancedData.conditions,
+            spitcast: enhancedData.spitcast
+          });
+        }
+      } catch (error) {
+        console.error(`Error getting data for favorite spot ${spotId}:`, error);
+      }
+    }
+
+    return favoritesData;
+  }
+
+  private getSpotCoordinates(spotId: string): { lat: number; lng: number } | null {
+    // Map spot IDs to coordinates (this would ideally come from the spots data)
+    const spotCoordinates: { [key: string]: { lat: number; lng: number } } = {
+      'mavericks': { lat: 37.495, lng: -122.495 },
+      'steamer_lane': { lat: 36.9517, lng: -122.0267 },
+      'rincon': { lat: 34.3717, lng: -119.475 },
+      'malibu': { lat: 34.0375, lng: -118.6775 }
+    };
+
+    return spotCoordinates[spotId] || null;
   }
 }
 

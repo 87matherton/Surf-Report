@@ -1,0 +1,36 @@
+
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#21CBF3;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="4" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="62" fill="url(#bg)" filter="url(#shadow)"/>
+  
+  <!-- Wave patterns -->
+  <g transform="translate(12.8, 38.4)">
+    <!-- Main wave -->
+    <path d="M0 25.6 Q25.6 12.8 51.2 25.6 T102.4 25.6" 
+          stroke="white" stroke-width="5.12" fill="none" opacity="0.9"/>
+    
+    <!-- Second wave -->
+    <path d="M0 44.8 Q19.2 32 38.4 44.8 T76.8 44.8" 
+          stroke="white" stroke-width="3.84" fill="none" opacity="0.7"/>
+    
+    <!-- Third wave -->
+    <path d="M25.6 64 Q44.8 51.2 64 64 T102.4 64" 
+          stroke="white" stroke-width="3.2" fill="none" opacity="0.5"/>
+  </g>
+  
+  <!-- Surfboard icon -->
+  <g transform="translate(76.8, 19.2) rotate(45)">
+    <ellipse cx="0" cy="0" rx="10.24" ry="32" fill="white" opacity="0.8"/>
+    <ellipse cx="0" cy="0" rx="5.12" ry="25.6" fill="#FF9800" opacity="0.9"/>
+  </g>
+</svg>
