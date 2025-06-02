@@ -7,11 +7,10 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { surfSpots, SurfSpot } from '../../data/spots';
+import { surfSpots, SurfSpot } from '../data/spots';
 import SpotDetailsModal from './SpotDetailsModal';
 import MapLegend from './MapLegend';
-import WeatherIndicator from './WeatherIndicator';
-import WeatherService from '../services/weatherService';
+import weatherService from '../services/weatherService';
 
 // Create custom surf icons based on difficulty and conditions
 const createSurfIcon = (difficulty: string, conditionsRating: string, isFavorite: boolean = false, qualityScore?: number) => {
@@ -118,11 +117,9 @@ const Map: React.FC = () => {
   const [selectedSpot, setSelectedSpot] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSpotForModal, setSelectedSpotForModal] = useState<SurfSpot | null>(null);
-  const [mapKey, setMapKey] = useState(() => Math.random().toString(36).substr(2, 9));
   const [favorites, setFavorites] = useState<string[]>([]);
   const [qualityScores, setQualityScores] = useState<{ [key: string]: number }>({});
   const mapRef = useRef<any>(null);
-  const weatherService = WeatherService;
 
   const filteredSpots = surfSpots.filter(spot =>
     spot.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -135,7 +132,7 @@ const Map: React.FC = () => {
       setFavorites(savedFavorites);
     };
     loadFavorites();
-  }, [weatherService]);
+  }, []);
 
   // Load quality scores for all spots
   useEffect(() => {
@@ -160,7 +157,7 @@ const Map: React.FC = () => {
     };
     
     loadQualityScores();
-  }, [weatherService]);
+  }, []);
 
   // Toggle favorite status
   const toggleFavorite = (spotId: string) => {
@@ -176,11 +173,7 @@ const Map: React.FC = () => {
     return favorites.includes(spotId);
   };
 
-  // Force complete remount with unique key on every mount to prevent double initialization
-  useEffect(() => {
-    setMapKey(Math.random().toString(36).substr(2, 9));
-  }, []);
-
+  // Update center when selected spot changes
   useEffect(() => {
     if (selectedSpot) {
       const spot = surfSpots.find(s => s.id === selectedSpot);
@@ -266,7 +259,7 @@ const Map: React.FC = () => {
           />
         </Box>
         <Box sx={{ flex: 1, position: 'relative' }}>
-          <div key={mapKey} style={{ height: '100%', width: '100%' }}>
+          <div style={{ height: '100%', width: '100%' }}>
             <MapContainer
               center={[center.lat, center.lng]}
               zoom={7}
@@ -336,16 +329,20 @@ const Map: React.FC = () => {
                       
                       <Typography variant="body2" sx={{ mb: 2 }}>{spot.description}</Typography>
                       
-                      {/* Live Weather Data */}
+                      {/* Basic conditions from spot data */}
                       <Box sx={{ mb: 2 }}>
                         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-                          🌊 Live Conditions
+                          🌊 Current Conditions
                         </Typography>
-                        <WeatherIndicator 
-                          lat={spot.location.lat} 
-                          lng={spot.location.lng} 
-                          compact={false}
-                        />
+                        <Typography variant="body2">
+                          Swell: {spot.currentConditions.swellHeight}ft @ {spot.currentConditions.swellPeriod}s ({spot.currentConditions.swellDirection})
+                        </Typography>
+                        <Typography variant="body2">
+                          Wind: {spot.currentConditions.windSpeed}mph {spot.currentConditions.windDirection}
+                        </Typography>
+                        <Typography variant="body2">
+                          Water: {spot.currentConditions.waterTemp}°F | Air: {spot.currentConditions.airTemp}°F
+                        </Typography>
                       </Box>
                       
                       <Button

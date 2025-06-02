@@ -1284,14 +1284,83 @@ class WeatherService {
   private getSpotCoordinates(spotId: string): { lat: number; lng: number } | null {
     // Map spot IDs to coordinates (this would ideally come from the spots data)
     const spotCoordinates: { [key: string]: { lat: number; lng: number } } = {
+      // WASHINGTON SPOTS
+      'wa1': { lat: 47.9021, lng: -124.6357 }, // La Push (First Beach)
+      'wa2': { lat: 46.8981, lng: -124.1057 }, // Westport
+      
+      // OREGON SPOTS
+      'or1': { lat: 45.8918, lng: -123.9615 }, // Cannon Beach
+      'or2': { lat: 45.7547, lng: -123.9700 }, // Short Sand Beach (Oswald West)
+      
+      // NORTHERN CALIFORNIA (EXPANDED)
+      'norcal1': { lat: 41.0581, lng: -124.1429 }, // Trinidad
+      'norcal2': { lat: 39.3074, lng: -123.8014 }, // Mendocino
+      'norcal3': { lat: 37.9097, lng: -122.6867 }, // Bolinas
+      
+      // EXISTING CALIFORNIA SPOTS
       'mavericks': { lat: 37.495, lng: -122.495 },
+      '1': { lat: 37.495, lng: -122.495 }, // Mavericks
+      'ocean_beach': { lat: 37.7749, lng: -122.5094 },
+      '5': { lat: 37.7749, lng: -122.5094 }, // Ocean Beach
+      'pacifica': { lat: 37.6138, lng: -122.4869 },
+      '6': { lat: 37.6138, lng: -122.4869 }, // Pacifica
+      'linda_mar': { lat: 37.5856, lng: -122.4983 },
+      '7': { lat: 37.5856, lng: -122.4983 }, // Linda Mar
+      
+      // CENTRAL CALIFORNIA
       'steamer_lane': { lat: 36.9517, lng: -122.0267 },
+      '2': { lat: 36.9517, lng: -122.0267 }, // Steamer Lane
+      'central1': { lat: 36.8039, lng: -121.7903 }, // Moss Landing
+      'pleasure_point': { lat: 36.9614, lng: -121.9758 },
+      '8': { lat: 36.9614, lng: -121.9758 }, // Pleasure Point
+      'mondos': { lat: 35.3606, lng: -120.8478 },
+      '9': { lat: 35.3606, lng: -120.8478 }, // Mondos
+      'pismo_beach': { lat: 35.1428, lng: -120.6413 },
+      '10': { lat: 35.1428, lng: -120.6413 }, // Pismo Beach
+      
+      // SOUTHERN CALIFORNIA
       'rincon': { lat: 34.3717, lng: -119.475 },
-      'malibu': { lat: 34.0375, lng: -118.6775 }
+      '3': { lat: 34.3717, lng: -119.475 }, // Rincon
+      'sb1': { lat: 34.2747, lng: -119.2928 }, // C Street (Ventura)
+      'malibu': { lat: 34.0375, lng: -118.6775 },
+      '4': { lat: 34.0375, lng: -118.6775 }, // Malibu
+      'la1': { lat: 34.0333, lng: -118.8167 }, // Zuma Beach
+      
+      // LOS ANGELES AREA
+      'manhattan_beach': { lat: 33.8847, lng: -118.4109 },
+      '14': { lat: 33.8847, lng: -118.4109 }, // Manhattan Beach
+      'el_segundo': { lat: 33.9178, lng: -118.4192 },
+      '15': { lat: 33.9178, lng: -118.4192 }, // El Segundo
+      'venice_beach': { lat: 33.9850, lng: -118.4695 },
+      '16': { lat: 33.9850, lng: -118.4695 }, // Venice Beach
+      'santa_monica': { lat: 34.0195, lng: -118.4912 },
+      '17': { lat: 34.0195, lng: -118.4912 }, // Santa Monica
+      
+      // ORANGE COUNTY
+      'huntington_beach': { lat: 33.6553, lng: -117.9988 },
+      '12': { lat: 33.6553, lng: -117.9988 }, // Huntington Beach
+      'newport_beach': { lat: 33.5931, lng: -117.8814 },
+      '13': { lat: 33.5931, lng: -117.8814 }, // Newport Beach
+      'trestles': { lat: 33.3892, lng: -117.5931 },
+      '11': { lat: 33.3892, lng: -117.5931 }, // Trestles
+      'oc1': { lat: 33.4833, lng: -117.7167 }, // Salt Creek
+      
+      // SAN DIEGO AREA
+      'swamis': { lat: 33.0361, lng: -117.2911 },
+      '20': { lat: 33.0361, lng: -117.2911 }, // Swamis
+      'la_jolla_shores': { lat: 32.8569, lng: -117.2569 },
+      '18': { lat: 32.8569, lng: -117.2569 }, // La Jolla Shores
+      'windansea': { lat: 32.8331, lng: -117.2778 },
+      '19': { lat: 32.8331, lng: -117.2778 }, // Windansea
+      'sd1': { lat: 32.7500, lng: -117.2500 }, // Ocean Beach (San Diego)
+      'sd2': { lat: 32.7167, lng: -117.2500 }  // Sunset Cliffs
     };
 
     return spotCoordinates[spotId] || null;
   }
 }
 
-export default WeatherService.getInstance(); 
+// Create singleton instance
+const weatherServiceInstance = WeatherService.getInstance();
+
+export default weatherServiceInstance; 

@@ -10,19 +10,11 @@ import {
   Grid,
   Card,
   CardContent,
-  Divider,
   IconButton,
   Chip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { SurfSpot } from '../../data/spots';
-import WeatherDisplay from './WeatherDisplay';
-import WaveChart from './WaveChart';
-import SpotPhotoGallery from './SpotPhotoGallery';
-import ForecastCalendar from './ForecastCalendar';
-import BreakInfo from './BreakInfo';
-import { useWeatherData } from '../hooks/useWeatherData';
-import { useForecastData } from '../hooks/useForecastData';
+import { SurfSpot } from '../data/spots';
 
 interface SpotDetailsModalProps {
   open: boolean;
@@ -32,9 +24,6 @@ interface SpotDetailsModalProps {
 
 const SpotDetailsModal: React.FC<SpotDetailsModalProps> = ({ open, onClose, spot }) => {
   if (!spot) return null;
-
-  const { data: weatherData } = useWeatherData(spot.location.lat, spot.location.lng, true);
-  const { forecast } = useForecastData(spot.location.lat, spot.location.lng);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
@@ -64,43 +53,76 @@ const SpotDetailsModal: React.FC<SpotDetailsModalProps> = ({ open, onClose, spot
       </DialogTitle>
       
       <DialogContent>
-        {/* Real-time Weather Data */}
-        <WeatherDisplay 
-          lat={spot.location.lat} 
-          lng={spot.location.lng} 
-          locationName={spot.name}
-        />
-        
-        {/* Break Information */}
-        <BreakInfo 
-          spotName={spot.name}
-          breakInfo={spot.breakInfo}
-        />
-        
-        {/* Wave Chart */}
-        {weatherData && weatherData.wave && (
-          <WaveChart
-            waveData={weatherData.wave.chartData}
-            currentWaveHeight={weatherData.wave.current}
-            locationName={spot.name}
-          />
-        )}
-        
-        {/* 5-Day Forecast Calendar */}
-        <ForecastCalendar 
-          locationName={spot.name}
-          forecast={forecast}
-        />
-        
-        {/* Photo Gallery */}
-        <SpotPhotoGallery 
-          spotName={spot.name}
-          photos={spot.photos}
-        />
-        
-        <Typography variant="body1" sx={{ mb: 3 }}>
-          {spot.description}
-        </Typography>
+        {/* Basic Spot Information */}
+        <Card sx={{ mb: 2 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              📍 Spot Details
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              {spot.description}
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" gutterBottom>
+                  🌊 Current Conditions
+                </Typography>
+                <Typography variant="body2">
+                  Swell: {spot.currentConditions.swellHeight}ft @ {spot.currentConditions.swellPeriod}s ({spot.currentConditions.swellDirection})
+                </Typography>
+                <Typography variant="body2">
+                  Wind: {spot.currentConditions.windSpeed}mph {spot.currentConditions.windDirection}
+                </Typography>
+                <Typography variant="body2">
+                  Tide: {spot.currentConditions.tide}
+                </Typography>
+                <Typography variant="body2">
+                  Water: {spot.currentConditions.waterTemp}°F | Air: {spot.currentConditions.airTemp}°F
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" gutterBottom>
+                  ⭐ Best Conditions
+                </Typography>
+                <Typography variant="body2">
+                  Swell: {spot.bestConditions.swellDirection.join(', ')} {spot.bestConditions.swellSize}
+                </Typography>
+                <Typography variant="body2">
+                  Wind: {spot.bestConditions.windDirection.join(', ')}
+                </Typography>
+                <Typography variant="body2">
+                  Tide: {spot.bestConditions.tide.join(', ')}
+                </Typography>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+
+        {/* Forecast Data from spot */}
+        <Card sx={{ mb: 2 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              📊 Forecast
+            </Typography>
+            <Grid container spacing={2}>
+              {spot.forecast.map((f, i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="subtitle2">{f.date}</Typography>
+                      <Typography variant="body2">
+                        Swell: {f.swellHeight}ft @ {f.swellPeriod}s ({f.swellDirection})
+                      </Typography>
+                      <Typography variant="body2">
+                        Wind: {f.windSpeed}mph {f.windDirection}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
       </DialogContent>
       
       <DialogActions>

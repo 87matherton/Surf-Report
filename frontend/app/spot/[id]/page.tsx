@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { surfSpots } from "../../../data/spots";
+import { surfSpots } from "../../../src/data/spots";
 import { Box, Typography, Paper, Button, Grid, Card, CardContent, Divider } from "@mui/material";
 
 export default function SpotDetailPage() {
