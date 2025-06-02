@@ -34,10 +34,17 @@ export interface MarineData {
 
 export interface TideData {
   current: string;
+  currentHeight: number;
   next: Array<{
     time: string;
     type: 'high' | 'low';
     height: number;
+  }>;
+  chartData: Array<{
+    time: string;
+    timeLabel: string;
+    height: number;
+    type?: 'high' | 'low' | null;
   }>;
 }
 
@@ -197,29 +204,100 @@ class WeatherService {
 
   private generateTideData(): TideData {
     const now = new Date();
-    const times: Array<{
+    const currentHeight = 3.5 + Math.sin(Date.now() / 1000000) * 2.5; // Current tide height between 1-6m
+    
+    // Generate 12 hours of tide data (every 30 minutes = 24 data points)
+    const chartData: Array<{
+      time: string;
+      timeLabel: string;
+      height: number;
+      type?: 'high' | 'low' | null;
+    }> = [];
+    
+    const nextTides: Array<{
       time: string;
       type: 'high' | 'low';
       height: number;
     }> = [];
     
-    // Generate next 4 tide times (approximately every 6 hours)
-    for (let i = 1; i <= 4; i++) {
-      const tideTime = new Date(now.getTime() + (i * 6 * 60 * 60 * 1000));
-      times.push({
-        time: tideTime.toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
-          minute: '2-digit',
-          hour12: true 
-        }),
-        type: (i % 2 === 1 ? 'high' : 'low') as 'high' | 'low',
-        height: i % 2 === 1 ? 5.2 + Math.random() * 2 : 1.8 + Math.random() * 1.5
+    // Tide cycle: ~12.5 hours for full cycle (high to high)
+    // Generate realistic sine wave pattern
+    for (let i = 0; i < 24; i++) {
+      const timeOffset = i * 30 * 60 * 1000; // 30 minutes in milliseconds
+      const futureTime = new Date(now.getTime() + timeOffset);
+      
+      // Create realistic tide pattern (sine wave with some randomness)
+      const tidePhase = (Date.now() + timeOffset) / 1000000; // Phase offset
+      const baseHeight = 3.5 + Math.sin(tidePhase) * 2.2; // Base sine wave
+      const randomVariation = (Math.random() - 0.5) * 0.8; // Add some realistic variation
+      const height = Math.max(0.5, Math.min(6.5, baseHeight + randomVariation));
+      
+      // Determine if this is a high or low tide point
+      const prevHeight = i > 0 ? chartData[i - 1].height : height;
+      const nextPhase = tidePhase + 0.1;
+      const nextHeight = 3.5 + Math.sin(nextPhase) * 2.2;
+      
+      let type: 'high' | 'low' | null = null;
+      
+      // Detect tide extremes (simplified detection)
+      if (i > 0 && i < 23) {
+        const isLocalMax = height > prevHeight && height > nextHeight;
+        const isLocalMin = height < prevHeight && height < nextHeight;
+        
+        if (isLocalMax && height > 4.5) type = 'high';
+        if (isLocalMin && height < 2.5) type = 'low';
+      }
+      
+      const timeStr = futureTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: false
       });
+      
+      const timeLabel = futureTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      chartData.push({
+        time: timeStr,
+        timeLabel,
+        height: parseFloat(height.toFixed(1)),
+        type
+      });
+      
+      // Collect high/low tide times for the summary
+      if (type && nextTides.length < 4) {
+        nextTides.push({
+          time: timeLabel,
+          type,
+          height: parseFloat(height.toFixed(1))
+        });
+      }
+    }
+    
+    // If no extremes were detected, add some manually for demo purposes
+    if (nextTides.length === 0) {
+      for (let i = 1; i <= 4; i++) {
+        const tideTime = new Date(now.getTime() + (i * 3 * 60 * 60 * 1000)); // Every 3 hours
+        nextTides.push({
+          time: tideTime.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+          }),
+          type: (i % 2 === 1 ? 'high' : 'low') as 'high' | 'low',
+          height: i % 2 === 1 ? 5.2 + Math.random() * 1 : 1.8 + Math.random() * 1.5
+        });
+      }
     }
 
     return {
       current: Math.random() > 0.5 ? 'Rising' : 'Falling',
-      next: times
+      currentHeight: parseFloat(currentHeight.toFixed(1)),
+      next: nextTides,
+      chartData
     };
   }
 

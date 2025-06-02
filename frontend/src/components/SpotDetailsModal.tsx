@@ -16,6 +16,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { SurfSpot } from '../../data/spots';
 import WeatherDisplay from './WeatherDisplay';
+import TideChart from './TideChart';
+import { useWeatherData } from '../hooks/useWeatherData';
 
 interface SpotDetailsModalProps {
   open: boolean;
@@ -25,6 +27,8 @@ interface SpotDetailsModalProps {
 
 const SpotDetailsModal: React.FC<SpotDetailsModalProps> = ({ open, onClose, spot }) => {
   if (!spot) return null;
+
+  const { data: weatherData } = useWeatherData(spot.location.lat, spot.location.lng, true);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
@@ -47,6 +51,15 @@ const SpotDetailsModal: React.FC<SpotDetailsModalProps> = ({ open, onClose, spot
           lng={spot.location.lng} 
           locationName={spot.name}
         />
+        
+        {/* Tide Chart */}
+        {weatherData && (
+          <TideChart
+            tideData={weatherData.tide.chartData}
+            currentTideHeight={weatherData.tide.currentHeight}
+            locationName={spot.name}
+          />
+        )}
         
         <Typography variant="body1" sx={{ mb: 3 }}>
           {spot.description}
