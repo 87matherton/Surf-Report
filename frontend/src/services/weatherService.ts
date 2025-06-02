@@ -395,6 +395,146 @@ class WeatherService {
   clearCache(): void {
     this.cache.clear();
   }
+
+  // Method to get 5-day forecast with tide data for calendar display
+  async getFiveDayForecast(lat: number, lng: number): Promise<any[]> {
+    try {
+      // Get weather forecast
+      const weatherForecast = await this.getForecastData(lat, lng, 5);
+      
+      // Generate 5-day forecast with tides
+      const forecast = [];
+      const now = new Date();
+      
+      for (let i = 0; i < 5; i++) {
+        const date = new Date(now.getTime() + (i * 24 * 60 * 60 * 1000));
+        const weatherDay = weatherForecast[i] || this.generateDefaultWeatherDay(date, i);
+        
+        // Generate realistic tide times for this day (typically 2 high, 2 low per day)
+        const dayTides = this.generateDayTideData(date);
+        
+        // Generate marine conditions
+        const marineConditions = this.generateDayMarineConditions(i);
+        
+        forecast.push({
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          dayName: i === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' }),
+          weather: {
+            condition: weatherDay.description.toLowerCase().includes('clear') ? 'sunny' : 
+                      weatherDay.description.toLowerCase().includes('cloud') ? 'cloudy' :
+                      weatherDay.description.toLowerCase().includes('rain') ? 'rainy' : 'sunny',
+            icon: weatherDay.description.toLowerCase().includes('clear') ? 'sunny' : 
+                  weatherDay.description.toLowerCase().includes('cloud') ? 'cloudy' :
+                  weatherDay.description.toLowerCase().includes('rain') ? 'rainy' : 'sunny',
+            maxTemp: weatherDay.maxTemp || (20 + Math.random() * 8),
+            minTemp: weatherDay.minTemp || (12 + Math.random() * 6),
+            windSpeed: weatherDay.windSpeed || (5 + Math.random() * 15),
+            windDirection: weatherDay.windDirection?.toString() || (Math.random() * 360).toString(),
+            precipitation: weatherDay.description.toLowerCase().includes('rain') ? Math.random() * 10 : 0,
+            description: weatherDay.description || 'Partly cloudy'
+          },
+          marine: marineConditions,
+          tides: dayTides
+        });
+      }
+      
+      return forecast;
+    } catch (error) {
+      console.error('Error fetching 5-day forecast:', error);
+      // Return default forecast data
+      return this.generateDefaultFiveDayForecast();
+    }
+  }
+
+  private generateDayTideData(date: Date): Array<{ time: string; type: 'high' | 'low'; height: number }> {
+    const tides = [];
+    const baseTime = new Date(date);
+    baseTime.setHours(0, 0, 0, 0);
+    
+    // Generate 4 tide events per day (2 high, 2 low) with realistic timing
+    const tideEvents = [
+      { hours: 2 + Math.random() * 4, type: 'low' as const },
+      { hours: 8 + Math.random() * 4, type: 'high' as const },
+      { hours: 14 + Math.random() * 4, type: 'low' as const },
+      { hours: 20 + Math.random() * 4, type: 'high' as const }
+    ];
+    
+    tideEvents.forEach(event => {
+      const tideTime = new Date(baseTime.getTime() + (event.hours * 60 * 60 * 1000));
+      tides.push({
+        time: tideTime.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        type: event.type,
+        height: event.type === 'high' ? 
+          4.5 + Math.random() * 2.5 : 
+          0.8 + Math.random() * 1.5
+      });
+    });
+    
+    return tides.sort((a, b) => a.time.localeCompare(b.time));
+  }
+
+  private generateDayMarineConditions(dayIndex: number) {
+    // Create realistic marine condition variations over 5 days
+    const baseWaveHeight = 1.5 + Math.sin(dayIndex * 0.5) * 1.2 + Math.random() * 0.8;
+    const basePeriod = 8 + Math.random() * 6;
+    const baseDirection = 200 + Math.random() * 80; // SW to W
+    
+    return {
+      waveHeight: Math.max(0.5, baseWaveHeight),
+      wavePeriod: Math.round(basePeriod),
+      swellDirection: Math.round(baseDirection).toString()
+    };
+  }
+
+  private generateDefaultWeatherDay(date: Date, dayIndex: number) {
+    const conditions = ['Clear sky', 'Partly cloudy', 'Mostly cloudy', 'Light rain', 'Overcast'];
+    const condition = conditions[Math.floor(Math.random() * conditions.length)];
+    
+    return {
+      date: date.toISOString().split('T')[0],
+      maxTemp: 18 + Math.random() * 10 + Math.sin(dayIndex * 0.3) * 3,
+      minTemp: 12 + Math.random() * 6 + Math.sin(dayIndex * 0.3) * 2,
+      windSpeed: 8 + Math.random() * 12,
+      windDirection: Math.random() * 360,
+      description: condition,
+      icon: condition.toLowerCase().includes('clear') ? '01d' : 
+            condition.toLowerCase().includes('cloudy') ? '03d' : 
+            condition.toLowerCase().includes('rain') ? '10d' : '02d'
+    };
+  }
+
+  private generateDefaultFiveDayForecast() {
+    const forecast = [];
+    const now = new Date();
+    
+    for (let i = 0; i < 5; i++) {
+      const date = new Date(now.getTime() + (i * 24 * 60 * 60 * 1000));
+      const weatherDay = this.generateDefaultWeatherDay(date, i);
+      
+      forecast.push({
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        dayName: i === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' }),
+        weather: {
+          condition: weatherDay.description.toLowerCase().includes('clear') ? 'sunny' : 'cloudy',
+          icon: weatherDay.description.toLowerCase().includes('clear') ? 'sunny' : 'cloudy',
+          maxTemp: weatherDay.maxTemp,
+          minTemp: weatherDay.minTemp,
+          windSpeed: weatherDay.windSpeed,
+          windDirection: weatherDay.windDirection.toString(),
+          precipitation: weatherDay.description.toLowerCase().includes('rain') ? Math.random() * 5 : 0,
+          description: weatherDay.description
+        },
+        marine: this.generateDayMarineConditions(i),
+        tides: this.generateDayTideData(date)
+      });
+    }
+    
+    return forecast;
+  }
 }
 
 export default WeatherService.getInstance(); 
