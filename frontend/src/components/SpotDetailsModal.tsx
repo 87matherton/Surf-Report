@@ -17,9 +17,10 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { SurfSpot } from '../../data/spots';
 import WeatherDisplay from './WeatherDisplay';
-import TideChart from './TideChart';
+import WaveChart from './WaveChart';
 import SpotPhotoGallery from './SpotPhotoGallery';
 import ForecastCalendar from './ForecastCalendar';
+import BreakInfo from './BreakInfo';
 import { useWeatherData } from '../hooks/useWeatherData';
 import { useForecastData } from '../hooks/useForecastData';
 
@@ -70,11 +71,17 @@ const SpotDetailsModal: React.FC<SpotDetailsModalProps> = ({ open, onClose, spot
           locationName={spot.name}
         />
         
-        {/* Tide Chart */}
-        {weatherData && (
-          <TideChart
-            tideData={weatherData.tide.chartData}
-            currentTideHeight={weatherData.tide.currentHeight}
+        {/* Break Information */}
+        <BreakInfo 
+          spotName={spot.name}
+          breakInfo={spot.breakInfo}
+        />
+        
+        {/* Wave Chart */}
+        {weatherData && weatherData.wave && (
+          <WaveChart
+            waveData={weatherData.wave.chartData}
+            currentWaveHeight={weatherData.wave.current}
             locationName={spot.name}
           />
         )}

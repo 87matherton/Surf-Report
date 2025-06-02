@@ -21,16 +21,18 @@ import {
   Stack 
 } from '@mui/material';
 
-interface TideDataPoint {
+interface WaveDataPoint {
   time: string;
   timeLabel: string;
   height: number;
-  type?: 'high' | 'low' | null;
+  period?: number;
+  direction?: string;
+  type?: 'peak' | 'low' | null;
 }
 
-interface TideChartProps {
-  tideData: TideDataPoint[];
-  currentTideHeight: number;
+interface WaveChartProps {
+  waveData: WaveDataPoint[];
+  currentWaveHeight: number;
   locationName: string;
 }
 
@@ -55,14 +57,24 @@ const CustomTooltip = ({ active, payload, label, isMetric }: any) => {
           {data.timeLabel}
         </Typography>
         <Typography variant="body2" sx={{ color: '#2196F3' }}>
-          Tide Height: {height.toFixed(1)}{unit}
+          Wave Height: {height.toFixed(1)}{unit}
         </Typography>
+        {data.period && (
+          <Typography variant="body2" sx={{ color: '#FF9800' }}>
+            Period: {data.period}s
+          </Typography>
+        )}
+        {data.direction && (
+          <Typography variant="body2" sx={{ color: '#4CAF50' }}>
+            Direction: {data.direction}
+          </Typography>
+        )}
         {data.type && (
           <Typography variant="caption" sx={{ 
-            color: data.type === 'high' ? '#4CAF50' : '#FF9800',
+            color: data.type === 'peak' ? '#4CAF50' : '#FF9800',
             fontWeight: 'bold'
           }}>
-            {data.type === 'high' ? '🔺 High Tide' : '🔻 Low Tide'}
+            {data.type === 'peak' ? '🔺 Wave Peak' : '🔻 Wave Low'}
           </Typography>
         )}
       </Box>
@@ -71,48 +83,68 @@ const CustomTooltip = ({ active, payload, label, isMetric }: any) => {
   return null;
 };
 
-export const TideChart: React.FC<TideChartProps> = ({ 
-  tideData, 
-  currentTideHeight, 
+export const WaveChart: React.FC<WaveChartProps> = ({ 
+  waveData, 
+  currentWaveHeight, 
   locationName 
 }) => {
   const theme = useTheme();
   const [isMetric, setIsMetric] = useState(true);
 
   // Convert data based on unit preference
-  const convertedTideData = useMemo(() => {
-    if (isMetric) return tideData;
+  const convertedWaveData = useMemo(() => {
+    if (isMetric) return waveData;
     
-    return tideData.map(point => ({
+    return waveData.map(point => ({
       ...point,
       height: point.height * 3.28084 // Convert meters to feet
     }));
-  }, [tideData, isMetric]);
+  }, [waveData, isMetric]);
 
   const convertedCurrentHeight = useMemo(() => {
-    return isMetric ? currentTideHeight : currentTideHeight * 3.28084;
-  }, [currentTideHeight, isMetric]);
+    return isMetric ? currentWaveHeight : currentWaveHeight * 3.28084;
+  }, [currentWaveHeight, isMetric]);
 
-  // Find high and low tide points
-  const extremePoints = convertedTideData.filter(point => point.type);
+  // Find peak and low wave points
+  const extremePoints = convertedWaveData.filter(point => point.type);
   
-  // Get current time in the same format as chart data
+  // Get current time and find closest match in chart data
   const now = new Date();
-  const currentTimeStr = now.toLocaleTimeString('en-US', {
+  const currentTimeLabel = now.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
-    hour12: false
+    hour12: true
   });
 
+  // Find the closest time point in our data to the current time
+  const currentTime = now.getTime();
+  let closestDataPoint = convertedWaveData[0];
+  let closestTimeDiff = Infinity;
+
+  convertedWaveData.forEach(point => {
+    // Parse the time from the data point
+    const pointTime = new Date(point.time).getTime();
+    const timeDiff = Math.abs(pointTime - currentTime);
+    
+    if (timeDiff < closestTimeDiff) {
+      closestTimeDiff = timeDiff;
+      closestDataPoint = point;
+    }
+  });
+
+  console.log(`🕐 Current time: ${currentTimeLabel}`);
+  console.log(`📊 Closest data point: ${closestDataPoint.timeLabel}`);
+  console.log(`🌊 Chart time range: ${convertedWaveData[0]?.timeLabel} to ${convertedWaveData[convertedWaveData.length - 1]?.timeLabel}`);
+
   const unit = isMetric ? 'm' : 'ft';
-  const unitLabel = isMetric ? 'Height (m)' : 'Height (ft)';
+  const unitLabel = isMetric ? 'Wave Height (m)' : 'Wave Height (ft)';
 
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
           <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-            🌊 12-Hour Tide Chart - {locationName}
+            🌊 12-Hour Wave Forecast - {locationName}
           </Typography>
           
           <FormControlLabel
@@ -136,29 +168,33 @@ export const TideChart: React.FC<TideChartProps> = ({
         <Box sx={{ width: '100%', height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={convertedTideData}
+              data={convertedWaveData}
               margin={{
                 top: 20,
                 right: 30,
                 left: 20,
-                bottom: 20
+                bottom: 30
               }}
             >
               <defs>
-                <linearGradient id="tideGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2196F3" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#2196F3" stopOpacity={0.1}/>
+                <linearGradient id="waveGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#00BCD4" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#2196F3" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3F51B5" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
               
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
               
               <XAxis 
-                dataKey="time"
+                dataKey="timeLabel"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
                 interval="preserveStartEnd"
+                angle={-20}
+                textAnchor="end"
+                height={60}
               />
               
               <YAxis 
@@ -175,7 +211,7 @@ export const TideChart: React.FC<TideChartProps> = ({
               
               <Tooltip content={(props) => <CustomTooltip {...props} isMetric={isMetric} />} />
               
-              {/* Current tide level reference line */}
+              {/* Current wave height reference line */}
               <ReferenceLine 
                 y={convertedCurrentHeight} 
                 stroke="#FF5722" 
@@ -190,7 +226,7 @@ export const TideChart: React.FC<TideChartProps> = ({
               
               {/* Current time vertical line */}
               <ReferenceLine 
-                x={currentTimeStr} 
+                x={closestDataPoint.timeLabel} 
                 stroke="#9C27B0" 
                 strokeWidth={3}
                 strokeOpacity={0.8}
@@ -201,22 +237,22 @@ export const TideChart: React.FC<TideChartProps> = ({
                 }}
               />
               
-              {/* High tide markers */}
-              {extremePoints.filter(p => p.type === 'high').map((point, index) => (
+              {/* Wave peak markers */}
+              {extremePoints.filter(p => p.type === 'peak').map((point, index) => (
                 <ReferenceLine 
-                  key={`high-${index}`}
-                  x={point.time} 
+                  key={`peak-${index}`}
+                  x={point.timeLabel} 
                   stroke="#4CAF50" 
                   strokeWidth={2}
                   strokeOpacity={0.7}
                 />
               ))}
               
-              {/* Low tide markers */}
+              {/* Wave low markers */}
               {extremePoints.filter(p => p.type === 'low').map((point, index) => (
                 <ReferenceLine 
                   key={`low-${index}`}
-                  x={point.time} 
+                  x={point.timeLabel} 
                   stroke="#FF9800" 
                   strokeWidth={2}
                   strokeOpacity={0.7}
@@ -228,7 +264,7 @@ export const TideChart: React.FC<TideChartProps> = ({
                 dataKey="height"
                 stroke="#2196F3"
                 strokeWidth={3}
-                fill="url(#tideGradient)"
+                fill="url(#waveGradient)"
                 dot={{ fill: '#2196F3', strokeWidth: 2, r: 3 }}
                 activeDot={{ r: 6, stroke: '#2196F3', strokeWidth: 2, fill: '#fff' }}
               />
@@ -240,11 +276,11 @@ export const TideChart: React.FC<TideChartProps> = ({
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 2, flexWrap: 'wrap' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 12, height: 3, bgcolor: '#2196F3', borderRadius: 1 }} />
-            <Typography variant="caption">Tide Level</Typography>
+            <Typography variant="caption">Wave Height</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 12, height: 3, bgcolor: '#FF5722', borderRadius: 1 }} />
-            <Typography variant="caption">Current Level</Typography>
+            <Typography variant="caption">Current Height</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 3, height: 12, bgcolor: '#9C27B0', borderRadius: 1 }} />
@@ -252,11 +288,11 @@ export const TideChart: React.FC<TideChartProps> = ({
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 3, height: 12, bgcolor: '#4CAF50', borderRadius: 1 }} />
-            <Typography variant="caption">High Tide</Typography>
+            <Typography variant="caption">Wave Peak</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 3, height: 12, bgcolor: '#FF9800', borderRadius: 1 }} />
-            <Typography variant="caption">Low Tide</Typography>
+            <Typography variant="caption">Wave Low</Typography>
           </Box>
         </Box>
       </CardContent>
@@ -264,4 +300,4 @@ export const TideChart: React.FC<TideChartProps> = ({
   );
 };
 
-export default TideChart; 
+export default WaveChart; 

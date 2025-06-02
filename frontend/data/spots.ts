@@ -17,6 +17,16 @@ export interface SurfSpot {
   difficulty: string;
   description: string;
   conditionsRating: string;
+  breakInfo: {
+    type: string;
+    waveDirection: string;
+    bottom: string;
+    peakSections?: string[];
+    hazards: string[];
+    bestTime: string;
+    crowdFactor: string;
+    experience: string;
+  };
   currentConditions: {
     swellHeight: string;
     swellPeriod: string;
@@ -55,6 +65,16 @@ export const surfSpots: SurfSpot[] = [
     difficulty: 'Expert',
     description: 'World-famous big wave surf spot. Only for the most experienced surfers.',
     conditionsRating: 'Good',
+    breakInfo: {
+      type: 'Deep water reef break',
+      waveDirection: 'Right-hand',
+      bottom: 'Rocky reef',
+      peakSections: ['The Bowl', 'Main Peak'],
+      hazards: ['Heavy water', 'Sharp rocks', 'Strong currents', 'Cold water', 'Great white sharks'],
+      bestTime: 'Winter mornings (Dec-Feb)',
+      crowdFactor: 'Invitation only - contest waves',
+      experience: 'World-class big wave experience only. Requires tow-in for biggest days.'
+    },
     currentConditions: {
       swellHeight: '15-20ft',
       swellPeriod: '16s',
@@ -134,6 +154,16 @@ export const surfSpots: SurfSpot[] = [
     difficulty: 'Advanced',
     description: 'Classic Santa Cruz surf break known for consistent waves.',
     conditionsRating: 'Excellent',
+    breakInfo: {
+      type: 'Rocky point break',
+      waveDirection: 'Right-hand',
+      bottom: 'Rocky reef and kelp',
+      peakSections: ['The Point', 'Middle Peak', 'The Slot', 'Cowell Beach'],
+      hazards: ['Sharp rocks', 'Strong currents', 'Kelp beds', 'Crowds', 'Sea lions'],
+      bestTime: 'Year-round, early mornings best',
+      crowdFactor: 'Very high - iconic spot with locals',
+      experience: 'Classic Santa Cruz point break with multiple takeoff zones. Can be territorial.'
+    },
     currentConditions: {
       swellHeight: '6-8ft',
       swellPeriod: '12s',
@@ -213,6 +243,16 @@ export const surfSpots: SurfSpot[] = [
     difficulty: 'Intermediate',
     description: 'Perfect right-hand point break, known as the "Queen of the Coast".',
     conditionsRating: 'Fair',
+    breakInfo: {
+      type: 'Cobblestone point break',
+      waveDirection: 'Right-hand',
+      bottom: 'Cobblestone and sand',
+      peakSections: ['The Cove', 'Rivermouth', 'Indicators'],
+      hazards: ['Rocks on inside', 'Rip currents', 'Crowds on good days', 'Parking challenges'],
+      bestTime: 'Fall/Winter swells (Oct-Mar)',
+      crowdFactor: 'High when good - world-renowned spot',
+      experience: 'Perfect peeling right-hander. Queen of the Coast with long, workable walls.'
+    },
     currentConditions: {
       swellHeight: '3-5ft',
       swellPeriod: '8s',
@@ -292,6 +332,16 @@ export const surfSpots: SurfSpot[] = [
     difficulty: 'Beginner',
     description: 'World-famous beginner-friendly break, perfect for learning.',
     conditionsRating: 'Good',
+    breakInfo: {
+      type: 'Cobblestone point break',
+      waveDirection: 'Right-hand',
+      bottom: 'Cobblestone point',
+      peakSections: ['First Point', 'Second Point', 'Third Point'],
+      hazards: ['Crowds', 'Beginners', 'Rocks on inside', 'Strong rip on bigger days'],
+      bestTime: 'Summer south swells (May-Sep)',
+      crowdFactor: 'Extremely high - most famous beginner break',
+      experience: 'Classic longboard wave. Birthplace of modern surfing. Perfect for learning.'
+    },
     currentConditions: {
       swellHeight: '2-4ft',
       swellPeriod: '6s',
