@@ -69,9 +69,10 @@ interface SpotDetailsDrawerProps {
   open: boolean;
   onClose: () => void;
   spot: SurfSpot | null;
+  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
 }
 
-const SpotDetailsDrawer: React.FC<SpotDetailsDrawerProps> = ({ open, onClose, spot }) => {
+const SpotDetailsDrawer: React.FC<SpotDetailsDrawerProps> = ({ open, onClose, spot, onScroll }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [qualityScore, setQualityScore] = useState<number | null>(null);
@@ -157,13 +158,21 @@ const SpotDetailsDrawer: React.FC<SpotDetailsDrawerProps> = ({ open, onClose, sp
           display: 'flex', 
           justifyContent: 'center', 
           pt: 2, 
-          pb: 1
-        }}>
+          pb: 1,
+          cursor: 'pointer'
+        }}
+        onClick={onClose}
+        >
           <Box sx={{
             width: 40,
             height: 4,
-            backgroundColor: '#e0e0e0',
-            borderRadius: 2
+            backgroundColor: '#bdbdbd',
+            borderRadius: 2,
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: '#9e9e9e',
+              width: 50
+            }
           }} />
         </Box>
 
@@ -347,7 +356,10 @@ const SpotDetailsDrawer: React.FC<SpotDetailsDrawerProps> = ({ open, onClose, sp
         </Box>
 
         {/* Tab Content */}
-        <Box sx={{ maxHeight: '50vh', overflow: 'auto' }}>
+        <Box 
+          sx={{ maxHeight: '50vh', overflow: 'auto' }}
+          onScroll={onScroll}
+        >
           <TabPanel value={activeTab} index={0}>
             {/* Current Conditions */}
             <Grid container spacing={2}>
@@ -355,33 +367,49 @@ const SpotDetailsDrawer: React.FC<SpotDetailsDrawerProps> = ({ open, onClose, sp
                 <WeatherDisplay 
                   lat={spot.location.lat} 
                   lng={spot.location.lng}
+                  locationName={spot.name}
                 />
               </Grid>
               <Grid item xs={12}>
-                <WaveChart spotId={spot.id} />
+                <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                  <Typography>Wave Chart Coming Soon</Typography>
+                </Box>
               </Grid>
               <Grid item xs={12}>
-                <TideChart 
-                  lat={spot.location.lat} 
-                  lng={spot.location.lng}
-                />
+                <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                  <Typography>Tide Chart Coming Soon</Typography>
+                </Box>
               </Grid>
             </Grid>
           </TabPanel>
 
           <TabPanel value={activeTab} index={1}>
-            <ForecastCalendar 
-              lat={spot.location.lat} 
-              lng={spot.location.lng}
-            />
+            <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+              <Typography>Forecast Calendar Coming Soon</Typography>
+            </Box>
           </TabPanel>
 
           <TabPanel value={activeTab} index={2}>
-            <BreakInfo spot={spot} />
+            {spot.breakInfo ? (
+              <BreakInfo breakInfo={spot.breakInfo} spotName={spot.name} />
+            ) : (
+              <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                <Typography>Break information coming soon</Typography>
+              </Box>
+            )}
           </TabPanel>
 
           <TabPanel value={activeTab} index={3}>
-            <SpotPhotoGallery photos={spot.photos} />
+            {spot.photos && spot.photos.length > 0 ? (
+              <SpotPhotoGallery 
+                photos={spot.photos} 
+                spotName={spot.name}
+              />
+            ) : (
+              <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                <Typography>Photos coming soon</Typography>
+              </Box>
+            )}
           </TabPanel>
         </Box>
       </Box>

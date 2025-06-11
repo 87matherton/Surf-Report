@@ -5,7 +5,6 @@ export const metadata = {
   title: 'WaveCheck - Surf Report',
   description: 'Real-time surf conditions and forecasts for your favorite spots',
   manifest: '/manifest.json',
-  themeColor: '#2196F3',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -25,12 +24,14 @@ export const metadata = {
     title: 'WaveCheck - Surf Report',
     description: 'Real-time surf conditions and forecasts for your favorite spots',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#2196F3',
 };
 
 export default function RootLayout({
