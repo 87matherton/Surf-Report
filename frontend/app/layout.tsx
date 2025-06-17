@@ -1,7 +1,12 @@
 import React from 'react';
 import ClientThemeProvider from '../src/components/ThemeProvider';
+import './globals.css';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 
-export const metadata = {
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
   title: 'WaveCheck - Surf Report',
   description: 'Real-time surf conditions and forecasts for your favorite spots',
   manifest: '/manifest.json',
@@ -77,7 +82,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/icons/apple-splash-750-1334.jpg" sizes="750x1334" />
         <link rel="apple-touch-startup-image" href="/icons/apple-splash-640-1136.jpg" sizes="640x1136" />
       </head>
-      <body suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={true} className={inter.className}>
         <ClientThemeProvider>
           {children}
         </ClientThemeProvider>

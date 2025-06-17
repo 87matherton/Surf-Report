@@ -10,16 +10,9 @@ import {
   ReferenceLine,
   Legend
 } from 'recharts';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Typography, 
-  useTheme, 
-  FormControlLabel, 
-  Switch,
-  Stack 
-} from '@mui/material';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Switch } from '../components/ui/switch';
+import { Label } from '../components/ui/label';
 
 interface WaveDataPoint {
   time: string;
@@ -43,41 +36,29 @@ const CustomTooltip = ({ active, payload, label, isMetric }: any) => {
     const unit = isMetric ? 'm' : 'ft';
     
     return (
-      <Box
-        sx={{
-          bgcolor: 'background.paper',
-          p: 1.5,
-          border: 1,
-          borderColor: 'divider',
-          borderRadius: 1,
-          boxShadow: 2
-        }}
-      >
-        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+      <div className="bg-background p-3 border rounded shadow">
+        <p className="text-sm font-bold">
           {data.timeLabel}
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#2196F3' }}>
+        </p>
+        <p className="text-sm text-blue-500">
           Wave Height: {height.toFixed(1)}{unit}
-        </Typography>
+        </p>
         {data.period && (
-          <Typography variant="body2" sx={{ color: '#FF9800' }}>
+          <p className="text-sm text-orange-500">
             Period: {data.period}s
-          </Typography>
+          </p>
         )}
         {data.direction && (
-          <Typography variant="body2" sx={{ color: '#4CAF50' }}>
+          <p className="text-sm text-green-500">
             Direction: {data.direction}
-          </Typography>
+          </p>
         )}
         {data.type && (
-          <Typography variant="caption" sx={{ 
-            color: data.type === 'peak' ? '#4CAF50' : '#FF9800',
-            fontWeight: 'bold'
-          }}>
+          <p className={`text-xs font-bold ${data.type === 'peak' ? 'text-green-500' : 'text-orange-500'}`}>
             {data.type === 'peak' ? '🔺 Wave Peak' : '🔻 Wave Low'}
-          </Typography>
+          </p>
         )}
-      </Box>
+      </div>
     );
   }
   return null;
@@ -88,7 +69,6 @@ export const WaveChart: React.FC<WaveChartProps> = ({
   currentWaveHeight, 
   locationName 
 }) => {
-  const theme = useTheme();
   const [isMetric, setIsMetric] = useState(true);
 
   // Convert data based on unit preference
@@ -163,36 +143,26 @@ export const WaveChart: React.FC<WaveChartProps> = ({
   console.log(`📊 Closest data point: ${closestDataPoint.timeLabel}`);
   console.log(`🌊 Chart time range: ${convertedWaveData[0]?.timeLabel} to ${convertedWaveData[convertedWaveData.length - 1]?.timeLabel}`);
 
-  const unit = isMetric ? 'm' : 'ft';
   const unitLabel = isMetric ? 'Wave Height (m)' : 'Wave Height (ft)';
 
   return (
-    <Card sx={{ mb: 2 }}>
-      <CardContent>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-            🌊 12-Hour Wave Forecast - {locationName}
-          </Typography>
-          
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isMetric}
-                onChange={(e) => setIsMetric(e.target.checked)}
-                color="primary"
-                size="small"
-              />
-            }
-            label={
-              <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                {isMetric ? 'Metric (m)' : 'Imperial (ft)'}
-              </Typography>
-            }
-            sx={{ m: 0 }}
+    <Card className="mb-4">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center">
+          🌊 12-Hour Wave Forecast - {locationName}
+        </CardTitle>
+        <div className="flex items-center space-x-2">
+          <Switch
+            checked={isMetric}
+            onCheckedChange={setIsMetric}
           />
-        </Stack>
-        
-        <Box sx={{ width: '100%', height: 300 }}>
+          <Label className="font-bold">
+            {isMetric ? 'Metric (m)' : 'Imperial (ft)'}
+          </Label>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               key={`wave-chart-${isMetric ? 'metric' : 'imperial'}`}
@@ -212,13 +182,13 @@ export const WaveChart: React.FC<WaveChartProps> = ({
                 </linearGradient>
               </defs>
               
-              <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               
               <XAxis 
                 dataKey="timeLabel"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+                tick={{ fontSize: 12, fill: '#6b7280' }}
                 interval="preserveStartEnd"
                 angle={-20}
                 textAnchor="end"
@@ -229,14 +199,14 @@ export const WaveChart: React.FC<WaveChartProps> = ({
                 domain={yAxisDomain}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+                tick={{ fontSize: 12, fill: '#6b7280' }}
                 tickFormatter={(value) => `${value.toFixed(1)}`}
                 width={50}
                 label={{ 
                   value: unitLabel, 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: theme.palette.text.secondary }
+                  style: { textAnchor: 'middle', fill: '#6b7280' }
                 }}
               />
               
@@ -301,31 +271,7 @@ export const WaveChart: React.FC<WaveChartProps> = ({
               />
             </AreaChart>
           </ResponsiveContainer>
-        </Box>
-        
-        {/* Legend */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 2, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 12, height: 3, bgcolor: '#2196F3', borderRadius: 1 }} />
-            <Typography variant="caption">Wave Height</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 12, height: 3, bgcolor: '#FF5722', borderRadius: 1 }} />
-            <Typography variant="caption">Current Height</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 3, height: 12, bgcolor: '#9C27B0', borderRadius: 1 }} />
-            <Typography variant="caption">Current Time</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 3, height: 12, bgcolor: '#4CAF50', borderRadius: 1 }} />
-            <Typography variant="caption">Wave Peak</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 3, height: 12, bgcolor: '#FF9800', borderRadius: 1 }} />
-            <Typography variant="caption">Wave Low</Typography>
-          </Box>
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

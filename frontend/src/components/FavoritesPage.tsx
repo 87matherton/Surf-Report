@@ -1,275 +1,132 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
-  Button,
-  Chip,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  CircularProgress,
-  Alert
-} from '@mui/material';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import WavesIcon from '@mui/icons-material/Waves';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import ExploreIcon from '@mui/icons-material/Explore';
-import { surfSpots, SurfSpot } from '../data/spots';
-import weatherService from '../services/weatherService';
-import WeatherIndicator from './WeatherIndicator';
+"use client";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { surfSpots, type SurfSpot } from '../data/spots';
 
-interface FavoritesPageProps {
-  favorites: string[];
-  onExploreSpot: (spotId: string) => void;
-  onToggleFavorite: (spotId: string) => void;
-}
-
-const FavoritesPage: React.FC<FavoritesPageProps> = ({ 
-  favorites, 
-  onExploreSpot, 
-  onToggleFavorite 
-}) => {
-  const [qualityScores, setQualityScores] = useState<{ [key: string]: number }>({});
-  const [loading, setLoading] = useState(true);
-
-  const favoriteSpots = surfSpots.filter(spot => favorites.includes(spot.id));
-
-  // Load quality scores for favorite spots
-  useEffect(() => {
-    const loadQualityScores = async () => {
-      setLoading(true);
-      const scores: { [key: string]: number } = {};
-      
-      for (const spot of favoriteSpots) {
-        try {
-          const enhancedData = await weatherService.getEnhancedSurfData(
-            spot.id, 
-            spot.location.lat, 
-            spot.location.lng
-          );
-          scores[spot.id] = enhancedData.qualityScore;
-        } catch (error) {
-          console.error(`Error loading quality score for ${spot.name}:`, error);
-          scores[spot.id] = 5.0; // Default score
-        }
-      }
-      
-      setQualityScores(scores);
-      setLoading(false);
-    };
-    
-    if (favoriteSpots.length > 0) {
-      loadQualityScores();
-    } else {
-      setLoading(false);
-    }
-  }, [favorites]);
-
-  const getQualityColor = (score: number) => {
-    if (score >= 8) return '#4CAF50'; // Green - Excellent
-    if (score >= 6) return '#2196F3'; // Blue - Good
-    if (score >= 4) return '#FF9800'; // Orange - Fair
-    return '#F44336'; // Red - Poor
-  };
-
-  const getQualityText = (score: number) => {
-    if (score >= 8) return 'Excellent';
-    if (score >= 6) return 'Good';
-    if (score >= 4) return 'Fair';
-    return 'Poor';
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '60vh',
-        gap: 2
-      }}>
-        <CircularProgress size={60} sx={{ color: '#667eea' }} />
-        <Typography variant="h6" sx={{ color: '#667eea' }}>
-          Loading your favorite spots...
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Fetching real-time surf conditions
-        </Typography>
-      </Box>
-    );
+// Get popular surf spots for favorites (mix from different regions)
+const getFavoriteSpots = (): SurfSpot[] => {
+  const favoriteSpotIds = [
+    'ca1', // Mavericks
+    '4', // Malibu  
+    '12', // Huntington Beach
+    '2', // Steamer Lane
+    '11', // Trestles
+    '20', // Swamis
+    'or1', // Cannon Beach
+    'norcal3', // Bolinas
+    '3', // Rincon
+    'oc1', // Salt Creek
+    '18', // La Jolla Shores
+    '19' // Windansea
+  ];
+  
+  // Get spots that exist in our database
+  const availableSpots = surfSpots.filter(spot => favoriteSpotIds.includes(spot.id));
+  
+  // If we don't have enough spots from the IDs, add more from the database
+  if (availableSpots.length < 12) {
+    const additionalSpots = surfSpots
+      .filter(spot => !favoriteSpotIds.includes(spot.id))
+      .slice(0, 12 - availableSpots.length);
+    return [...availableSpots, ...additionalSpots];
   }
+  
+  return availableSpots.slice(0, 12);
+};
 
-  if (favoriteSpots.length === 0) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Box sx={{ mb: 3 }}>
-          <FavoriteIcon sx={{ fontSize: 80, color: '#ccc', mb: 2 }} />
-          <Typography variant="h5" gutterBottom>
-            No Favorite Spots Yet
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Start adding your favorite surf spots by clicking the heart icon on any location in the map!
-          </Typography>
-        </Box>
-        
-        <Alert severity="info" sx={{ maxWidth: 400, mx: 'auto' }}>
-          <Typography variant="body2">
-            💡 <strong>Tip:</strong> Your favorite spots will appear here with live conditions and quick access to detailed forecasts.
-          </Typography>
-        </Alert>
-      </Box>
-    );
-  }
+const SearchButton = () => (
+  <button className="absolute bg-white left-3 top-[13px] rounded-full size-[60px] border border-slate-200 flex items-center justify-center shadow-sm z-10">
+    <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  </button>
+);
 
-  // Sort favorite spots by quality score (highest first)
-  const sortedFavorites = [...favoriteSpots].sort((a, b) => 
-    (qualityScores[b.id] || 0) - (qualityScores[a.id] || 0)
-  );
+const UserAvatar = () => (
+  <div className="absolute right-3 top-[13px] size-[60px] rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center z-10">
+    <span className="text-white text-xl font-bold">👤</span>
+  </div>
+);
 
+const SurfSpotRow = ({ spot }: { spot: SurfSpot }) => (
+  <div className="flex items-center justify-between py-4 px-4 bg-white border-b border-gray-100">
+    <div className="flex-1">
+      <h3 className="font-semibold text-slate-700 text-lg">{spot.name}</h3>
+      <p className="text-slate-500 text-sm">{spot.region}, {spot.state}</p>
+    </div>
+    <div className="flex items-center gap-4">
+      <div className="text-center">
+        <div className="text-slate-700 text-sm font-medium">{spot.currentConditions.swellHeight}ft</div>
+        <div className="text-slate-400 text-xs">waves</div>
+      </div>
+      <div className="text-center">
+        <div className="text-slate-700 text-sm font-medium">{spot.currentConditions.windSpeed}mph {spot.currentConditions.windDirection}</div>
+        <div className="text-slate-400 text-xs">wind</div>
+      </div>
+      <div className="flex items-center gap-1">
+        <div className="w-[18px] h-[18px] rounded-full bg-gradient-to-br from-yellow-400 to-orange-500"></div>
+        <span className="text-slate-700 text-sm font-medium">{spot.currentConditions.airTemp}°</span>
+      </div>
+    </div>
+  </div>
+);
+
+const BottomTabBar = () => {
+  const router = useRouter();
+  
   return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ mb: 3, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ 
-          fontWeight: 'bold',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          mb: 1
-        }}>
-          🏄‍♂️ Your Favorite Spots
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {favoriteSpots.length} favorite{favoriteSpots.length !== 1 ? 's' : ''} • Sorted by current conditions
-        </Typography>
-      </Box>
+    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[377px] z-10">
+      <div className="bg-white rounded-full border border-slate-300 flex">
+        <button 
+          className="flex-1 py-3 px-5 font-medium text-sm text-black hover:bg-slate-50"
+          onClick={() => router.push('/')}
+        >
+          Map
+        </button>
+        <button className="flex-1 py-3 px-5 bg-slate-100 rounded-full font-medium text-sm text-black">
+          Favorites
+        </button>
+        <button 
+          className="flex-1 py-3 px-5 font-medium text-sm text-black hover:bg-slate-50"
+          onClick={() => router.push('/forecast')}
+        >
+          Forecast
+        </button>
+      </div>
+    </div>
+  );
+};
 
-      <Grid container spacing={2}>
-        {sortedFavorites.map((spot) => (
-          <Grid item xs={12} sm={6} key={spot.id}>
-            <Card 
-              sx={{ 
-                borderRadius: '16px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(0,0,0,0.05)',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-                  transition: 'all 0.2s ease'
-                }
-              }}
-            >
-              <CardContent sx={{ pb: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                      {spot.name}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                      <LocationOnIcon sx={{ fontSize: 16, color: '#667eea' }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {spot.region}, {spot.state}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  
-                  {/* Quality Score Badge */}
-                  {qualityScores[spot.id] && (
-                    <Chip
-                      label={`${qualityScores[spot.id].toFixed(1)}/10`}
-                      sx={{
-                        backgroundColor: getQualityColor(qualityScores[spot.id]),
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: '0.875rem'
-                      }}
-                    />
-                  )}
-                </Box>
-
-                {/* Conditions Summary */}
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Conditions:</strong> {spot.conditionsRating} • <strong>Difficulty:</strong> {spot.difficulty}
-                  </Typography>
-                  
-                  {qualityScores[spot.id] && (
-                    <Typography variant="body2" sx={{ color: getQualityColor(qualityScores[spot.id]) }}>
-                      <strong>Quality:</strong> {getQualityText(qualityScores[spot.id])}
-                    </Typography>
-                  )}
-                </Box>
-
-                {/* Live Weather Indicator */}
-                <Box sx={{ mb: 2 }}>
-                  <WeatherIndicator 
-                    lat={spot.location.lat} 
-                    lng={spot.location.lng} 
-                    compact={true}
-                  />
-                </Box>
-
-                {/* Quick Stats */}
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  <Chip 
-                    icon={<WavesIcon />}
-                    label={`${spot.currentConditions.swellHeight}ft`}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Chip 
-                    label={`${spot.currentConditions.windSpeed}mph ${spot.currentConditions.windDirection}`}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Chip 
-                    label={`${spot.currentConditions.waterTemp}°F`}
-                    size="small"
-                    variant="outlined"
-                  />
-                </Box>
-              </CardContent>
-              
-              <CardActions sx={{ pt: 0, px: 2, pb: 2 }}>
-                <Button
-                  startIcon={<ExploreIcon />}
-                  onClick={() => onExploreSpot(spot.id)}
-                  variant="contained"
-                  sx={{
-                    flex: 1,
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                    }
-                  }}
-                >
-                  Explore
-                </Button>
-                <Button
-                  startIcon={<FavoriteIcon />}
-                  onClick={() => onToggleFavorite(spot.id)}
-                  variant="outlined"
-                  color="error"
-                  sx={{ borderRadius: '12px' }}
-                >
-                  Remove
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+const FavoritesPage = () => {
+  const favoriteSpots = getFavoriteSpots();
+  
+  return (
+    <div className="fixed inset-0 w-full h-full overflow-hidden bg-gray-50">
+      <div className="relative w-full h-full">
+        {/* Header */}
+        <SearchButton />
+        <UserAvatar />
+        
+        {/* Content */}
+        <div className="pt-20 pb-24 h-full overflow-y-auto">
+          <div className="px-4 mb-4">
+            <h1 className="text-2xl font-bold text-slate-800">Favorites</h1>
+            <p className="text-slate-600 text-sm">Your saved surf spots</p>
+          </div>
+          
+          {/* Surf Spots List */}
+          <div className="bg-white mx-4 rounded-lg shadow-sm overflow-hidden">
+            {favoriteSpots.map((spot) => (
+              <SurfSpotRow key={spot.id} spot={spot} />
+            ))}
+          </div>
+        </div>
+        
+        {/* Bottom Navigation */}
+        <BottomTabBar />
+      </div>
+    </div>
   );
 };
 
