@@ -1,103 +1,221 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { surfSpots } from '../src/data/spots';
+import { useLiveData, useLiveDataFormatters } from '../src/hooks/useLiveData';
+import { getQualityColor, getQualityEmoji } from '../src/utils/surfUtils';
+import BottomNavigation from '../src/components/BottomNavigation';
+
+export default function HomePage() {
+  const { 
+    liveDataState, 
+    updateSpots, 
+    getSpot, 
+    isSpotUpdated, 
+    refreshAll,
+    hasUpdatedSpots 
+  } = useLiveData();
+  
+  const { formatLastUpdated, getConditionsBadgeColor } = useLiveDataFormatters();
+
+  const [spots, setSpots] = useState(surfSpots);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Popular spot IDs to feature
+  const popularSpotIds = ['mavericks', 'pipeline', 'malibu', 'steamer-lane'];
+  const popularSpots = spots.filter(spot => popularSpotIds.includes(spot.id));
+  const featuredSpot = popularSpots[0];
+
+  // Load live data on component mount
+  useEffect(() => {
+    const loadLiveData = async () => {
+      if (isInitialLoad) {
+        console.log('Loading live surf data...');
+        const updatedSpots = await updateSpots(popularSpots);
+        setSpots(prevSpots => 
+          prevSpots.map(spot => 
+            updatedSpots.find(updated => updated.id === spot.id) || spot
+          )
+        );
+        setIsInitialLoad(false);
+      }
+    };
+
+    loadLiveData();
+  }, [isInitialLoad, updateSpots]);
+
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    console.log('Refreshing surf data...');
+    const updatedSpots = await updateSpots(popularSpots);
+    setSpots(prevSpots => 
+      prevSpots.map(spot => 
+        updatedSpots.find(updated => updated.id === spot.id) || spot
+      )
+    );
+  };
+
+  // Get updated spot data
+  const getUpdatedSpot = (originalSpot: any) => {
+    return getSpot(originalSpot);
+  };
+
+  const updatedFeaturedSpot = featuredSpot ? getUpdatedSpot(featuredSpot) : null;
+  const updatedPopularSpots = popularSpots.map(getUpdatedSpot);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600">
+      {/* Header */}
+      <div className="bg-white/10 backdrop-blur-md border-b border-white/20">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Surf Report</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1">
+                  <div className={`w-2 h-2 rounded-full ${liveDataState.isLoading ? 'bg-yellow-400 animate-pulse' : hasUpdatedSpots ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                  <span className="text-white/80 text-sm">
+                    {liveDataState.isLoading ? 'Updating...' : `Updated ${formatLastUpdated(liveDataState.lastUpdated)}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={liveDataState.isLoading}
+              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
+            >
+              <svg 
+                className={`w-5 h-5 text-white ${liveDataState.isLoading ? 'animate-spin' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+        {/* Error Message */}
+        {liveDataState.error && (
+          <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+            <p className="text-red-100 text-sm">{liveDataState.error}</p>
+          </div>
+        )}
+
+        {/* Featured Spot */}
+        {updatedFeaturedSpot && (
+          <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-white">Featured Spot</h2>
+              {isSpotUpdated(updatedFeaturedSpot.id) && (
+                <span className="px-2 py-1 bg-green-500/20 rounded-full text-xs text-green-200 border border-green-500/30">
+                  Live
+                </span>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                                     <h3 className="text-xl font-bold text-white">{updatedFeaturedSpot.name}</h3>
+                   <p className="text-white/70 text-sm">{updatedFeaturedSpot.region}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{getQualityEmoji(updatedFeaturedSpot.conditionsRating)}</span>
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${getConditionsBadgeColor(updatedFeaturedSpot.conditionsRating)} text-white`}>
+                    {updatedFeaturedSpot.conditionsRating}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs uppercase tracking-wide">Wave Height</p>
+                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.swellHeight}ft</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs uppercase tracking-wide">Wind</p>
+                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.windSpeed}mph {updatedFeaturedSpot.currentConditions.windDirection}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs uppercase tracking-wide">Water Temp</p>
+                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.waterTemp}°F</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs uppercase tracking-wide">Period</p>
+                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.swellPeriod}s</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Popular Spots */}
+        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20">
+          <h2 className="text-lg font-semibold text-white mb-4">Popular Spots</h2>
+          
+          <div className="space-y-3">
+            {updatedPopularSpots.map((spot) => (
+              <div key={spot.id} className="bg-white/10 rounded-lg p-3 hover:bg-white/20 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-semibold text-white">{spot.name}</h3>
+                      <div className="flex items-center gap-2">
+                        {isSpotUpdated(spot.id) && (
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        )}
+                        <span className="text-lg">{getQualityEmoji(spot.conditionsRating)}</span>
+                      </div>
+                    </div>
+                                         <p className="text-white/70 text-sm mb-2">{spot.region}</p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-sm text-white/80">
+                        <span>{spot.currentConditions.swellHeight}ft</span>
+                        <span>{spot.currentConditions.windSpeed}mph {spot.currentConditions.windDirection}</span>
+                        <span>{spot.currentConditions.waterTemp}°F</span>
+                      </div>
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionsBadgeColor(spot.conditionsRating)} text-white`}>
+                        {spot.conditionsRating}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20">
+          <h2 className="text-lg font-semibold text-white mb-4">Today's Summary</h2>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <p className="text-white/70 text-sm">Best Conditions</p>
+              <p className="text-white font-semibold">
+                {updatedPopularSpots.find(s => s.conditionsRating === 'Excellent')?.name || 
+                 updatedPopularSpots.find(s => s.conditionsRating === 'Good')?.name || 
+                 'Check back later'}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-white/70 text-sm">Avg Wave Height</p>
+              <p className="text-white font-semibold">
+                {Math.round(updatedPopularSpots.reduce((sum, spot) => sum + spot.currentConditions.swellHeight, 0) / updatedPopularSpots.length * 10) / 10}ft
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <BottomNavigation />
     </div>
   );
 }

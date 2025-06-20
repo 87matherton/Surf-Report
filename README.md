@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Surf Report App
 
-## Getting Started
+A modern, responsive surf forecast application built with Next.js, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## 🌊 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Live Data Integration
+- **Real-time surf conditions** from Open-Meteo Marine API
+- **Live weather data** including wind, temperature, and precipitation
+- **7-day surf forecasts** with quality ratings
+- **Smart caching** (10-minute cache duration)
+- **Automatic quality calculation** based on wave height, wind, and swell period
+- **Fallback data** when APIs are unavailable
+
+### Pages & Navigation
+- **Homepage**: Featured spot with live conditions and popular spots overview
+- **Forecast**: 7-day detailed forecasts for any surf spot
+- **Favorites**: Personalized list with live data updates
+- **Profile**: User preferences and surf statistics
+- **Map**: Interactive surf spot locations (coming soon)
+
+### User Experience
+- **Mobile-first responsive design**
+- **Real-time loading indicators**
+- **Manual refresh functionality**
+- **Search and filtering**
+- **LocalStorage persistence**
+- **Error handling with graceful fallbacks**
+
+## 🚀 Live Data Features
+
+### Weather Service
+- Fetches marine conditions (wave height, period, direction)
+- Gets weather data (wind speed/direction, temperature)
+- Calculates surf quality ratings (Poor/Fair/Good/Excellent)
+- Handles API rate limiting with intelligent batching
+- Provides realistic fallback data based on location
+
+### Smart Caching
+- 10-minute cache duration for optimal performance
+- Automatic cache invalidation
+- Background refresh every 10 minutes
+- Reduces API calls while keeping data fresh
+
+### Quality Scoring Algorithm
+```
+Wave Height (30%): Optimal range based on spot characteristics
+Wind Speed (25%): Lower is better (offshore preferred)
+Swell Period (25%): Longer periods score higher
+Direction (20%): Matches spot's optimal swell/wind directions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Real-time Updates
+- Live status indicators (green dot = fresh data)
+- Loading animations during updates
+- Last updated timestamps
+- Error states with retry functionality
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏄‍♂️ Surf Spots Database
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+10 world-class surf spots included:
+- **Mavericks** (Half Moon Bay, CA) - Big wave expert break
+- **Pipeline** (Oahu, HI) - Legendary reef break
+- **Malibu** (California) - Classic longboard point break
+- **Steamer Lane** (Santa Cruz, CA) - Consistent point break
+- And 6 more premium locations...
 
-## Learn More
+Each spot includes:
+- GPS coordinates for live data fetching
+- Detailed break information (type, bottom, hazards)
+- Optimal conditions (swell size, direction, wind, tide)
+- Difficulty ratings and crowd factors
+- Photo galleries and local knowledge
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠 Technical Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js 15** with App Router
+- **TypeScript** for type safety
+- **Tailwind CSS** for styling
+- **Open-Meteo APIs** for live weather/marine data
+- **LocalStorage** for favorites persistence
+- **Custom hooks** for data management
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📱 Mobile Optimization
 
-## Deploy on Vercel
+- Touch-friendly interface
+- Responsive breakpoints
+- Optimized for iOS/Android browsers
+- Fast loading with efficient caching
+- Offline-ready fallback data
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔄 Data Flow
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Initial Load**: Fetch live data for popular spots
+2. **User Interaction**: Select spots, add favorites
+3. **Background Sync**: Auto-refresh every 10 minutes
+4. **Manual Refresh**: User-triggered updates
+5. **Caching**: Store results for 10 minutes
+6. **Fallback**: Use static data if APIs fail
+
+## 🎯 Future Enhancements
+
+- Interactive Mapbox integration
+- Push notifications for optimal conditions
+- Tide charts and graphs
+- Wave height predictions
+- Social features and spot reviews
+- PWA installation support
+
+## 🚀 Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the app.
+
+## 🌐 API Integration
+
+The app integrates with:
+- **Open-Meteo Marine API** - Wave and ocean data
+- **Open-Meteo Weather API** - Wind and temperature data
+
+No API keys required - uses free tier with intelligent caching and rate limiting.
+
+---
+
+Built with ❤️ for the surfing community
