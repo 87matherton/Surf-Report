@@ -1,0 +1,127 @@
+{
+  "name": "WaveCheck - Surf Forecast App",
+  "short_name": "WaveCheck",
+  "description": "Real-time surf forecasting and conditions for California surf spots",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2196F3",
+  "theme_color": "#2196F3",
+  "orientation": "portrait-primary",
+  "categories": ["sports", "weather", "lifestyle"],
+  "lang": "en-US",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.svg",
+      "sizes": "152x152",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.svg",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-screenshot-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Surf spots map view"
+    },
+    {
+      "src": "/screenshots/mobile-screenshot-2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Spot details and forecasts"
+    }
+  ],
+  "features": [
+    "Real-time surf conditions",
+    "7-day surf forecasts",
+    "Interactive map",
+    "Favorite spots",
+    "Quality scoring",
+    "Offline support"
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "View Favorites",
+      "short_name": "Favorites",
+      "description": "Quick access to your favorite surf spots",
+      "url": "/?favorites=true",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Mavericks",
+      "short_name": "Mavericks",
+      "description": "Check Mavericks conditions",
+      "url": "/?spot=mavericks",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Steamer Lane",
+      "short_name": "Steamer Lane",
+      "description": "Check Steamer Lane conditions",
+      "url": "/?spot=steamer_lane",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+} 
