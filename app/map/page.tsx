@@ -3,7 +3,7 @@
 import BottomNavigation from '../../src/components/BottomNavigation';
 import SearchModal from '../../src/components/SearchModal';
 import SearchButton from '../../src/components/SearchButton';
-import SurfBackground from '../../src/components/SurfBackground';
+import SurfBackground from '../../src/components/SurfBackgroundNoSSR';
 import { useState } from 'react';
 
 export default function MapPage() {

@@ -1,5 +1,5 @@
 import BottomNavigation from '../../src/components/BottomNavigation';
-import SurfBackground from '../../src/components/SurfBackground';
+import SurfBackground from '../../src/components/SurfBackgroundNoSSR';
 
 export default function ProfilePage() {
   return (

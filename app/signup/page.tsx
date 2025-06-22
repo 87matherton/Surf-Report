@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import SurfBackground from '../../src/components/SurfBackground';
+import SurfBackground from '../../src/components/SurfBackgroundNoSSR';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -62,14 +62,14 @@ export default function SignUpPage() {
     <SurfBackground category="auth">
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Join the Community</h1>
-            <p className="text-white/70">Create your surf account</p>
-          </div>
-
           {/* Sign Up Form */}
-          <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-6 border border-white/20 shadow-lg">
+          <div className="bg-white/10 backdrop-blur-md rounded-[30px] p-6 border border-white/20 shadow-lg">
+            {/* Header inside card */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2">Join the Community</h1>
+              <p className="text-white/70">Create your surf account</p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Name Field */}
               <div>
@@ -162,29 +162,29 @@ export default function SignUpPage() {
                 )}
               </button>
             </form>
-          </div>
 
-          {/* Sign In Link */}
-          <div className="text-center mt-6">
-            <p className="text-white/70 text-sm">
-              Already have an account?{' '}
+            {/* Sign In Link */}
+            <div className="text-center mt-6">
+              <p className="text-white/70 text-sm">
+                Already have an account?{' '}
+                <button
+                  onClick={() => router.push('/signin')}
+                  className="text-white font-semibold hover:underline"
+                >
+                  Sign In
+                </button>
+              </p>
+            </div>
+
+            {/* Back to Home */}
+            <div className="text-center mt-4">
               <button
-                onClick={() => router.push('/signin')}
-                className="text-white font-semibold hover:underline"
+                onClick={() => router.push('/')}
+                className="text-white/60 hover:text-white/80 text-sm transition-colors"
               >
-                Sign In
+                ← Back to Surf Report
               </button>
-            </p>
-          </div>
-
-          {/* Back to Home */}
-          <div className="text-center mt-4">
-            <button
-              onClick={() => router.push('/')}
-              className="text-white/60 hover:text-white/80 text-sm transition-colors"
-            >
-              ← Back to Surf Report
-            </button>
+            </div>
           </div>
         </div>
       </div>

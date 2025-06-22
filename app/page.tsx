@@ -9,7 +9,7 @@ import { useAuth } from '../src/hooks/useAuth';
 import BottomNavigation from '../src/components/BottomNavigation';
 import SearchModal from '../src/components/SearchModal';
 import SearchButton from '../src/components/SearchButton';
-import SurfBackground from '../src/components/SurfBackground';
+import SurfBackground from '../src/components/SurfBackgroundNoSSR';
 import BackgroundSelector from '../src/components/BackgroundSelector';
 
 export default function HomePage() {
