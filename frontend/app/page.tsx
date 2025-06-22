@@ -2,6 +2,7 @@
 import React, { useState, useRef, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import { surfSpots, type SurfSpot } from '../src/data/spots';
+import SearchModal from '../src/components/SearchModal';
 
 // Get all West Coast surf spots (Washington, Oregon, California)
 const getWestCoastSpots = (): SurfSpot[] => {
@@ -28,8 +29,11 @@ const latLngToSVG = (lat: number, lng: number, zoom: number = 1, panX: number = 
   return { x, y };
 };
 
-const SearchButton = () => (
-  <button className="absolute bg-white left-3 top-[13px] rounded-full size-[60px] border border-slate-200 flex items-center justify-center shadow-sm z-10">
+const SearchButton = ({ onClick }: { onClick: () => void }) => (
+  <button 
+    onClick={onClick}
+    className="absolute bg-white left-3 top-[13px] rounded-full size-[60px] border border-slate-200 flex items-center justify-center shadow-sm z-10 hover:bg-gray-50 transition-colors"
+  >
     <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -352,19 +356,34 @@ const WestCoastMap = () => {
 };
 
 export default function HomePage() {
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSpotSelect = (spot: SurfSpot) => {
+    router.push(`/spot/${spot.id}`);
+  };
+
   return (
-    <div className="fixed inset-0 w-full h-full overflow-hidden">
-      <div className="relative w-full h-full">
-        {/* West Coast Map Background */}
-        <WestCoastMap />
-        
-        {/* UI Elements */}
-        <SearchButton />
-        <UserAvatar />
-        <CenterLocationPin />
-        <SurfSpotCards />
-        <BottomTabBar />
-      </div>
+    <div className="relative w-full h-screen bg-slate-100 overflow-hidden">
+      <SearchButton onClick={() => setIsSearchModalOpen(true)} />
+      <UserAvatar />
+      <ZoomControls 
+        zoom={1} 
+        onZoomIn={() => {}} 
+        onZoomOut={() => {}} 
+        onReset={() => {}} 
+      />
+      <WestCoastMap />
+      <CenterLocationPin />
+      <SurfSpotCards />
+      <BottomTabBar />
+      
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onSpotSelect={handleSpotSelect}
+      />
     </div>
   );
 } 

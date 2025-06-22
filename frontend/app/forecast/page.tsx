@@ -1,9 +1,11 @@
 "use client";
 import React, { useState } from 'react';
 import { surfSpots } from '../../src/data/spots';
+import SearchModal from '../../src/components/SearchModal';
 
 export default function ForecastPage() {
   const [selectedSpot, setSelectedSpot] = useState(surfSpots[0]);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Get popular spots for the dropdown
   const popularSpots = surfSpots.filter(spot => 
@@ -66,6 +68,16 @@ export default function ForecastPage() {
                 </div>
               </div>
             </div>
+            {/* Search Button */}
+            <button
+              onClick={() => setIsSearchModalOpen(true)}
+              className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
           </div>
 
           {/* Spot Selector */}
@@ -166,6 +178,16 @@ export default function ForecastPage() {
             })}
           </div>
         </div>
+
+        {/* Search Modal */}
+        <SearchModal 
+          isOpen={isSearchModalOpen}
+          onClose={() => setIsSearchModalOpen(false)}
+          onSpotSelect={(spot) => {
+            setSelectedSpot(spot);
+            setIsSearchModalOpen(false);
+          }}
+        />
       </div>
     </div>
   );
