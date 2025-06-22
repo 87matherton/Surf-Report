@@ -50,14 +50,14 @@ export default function SignInPage() {
     >
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-white/70">Sign in to your surf account</p>
-          </div>
-
           {/* Sign In Form */}
-          <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-6 border border-white/20 shadow-lg">
+          <div className="bg-white/10 backdrop-blur-md rounded-[30px] p-6 border border-white/20 shadow-lg">
+            {/* Header inside card */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+              <p className="text-white/70">Sign in to your surf account</p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div>
@@ -126,29 +126,29 @@ export default function SignInPage() {
                 </button>
               </div>
             </form>
-          </div>
 
-          {/* Sign Up Link */}
-          <div className="text-center mt-6">
-            <p className="text-white/70 text-sm">
-              Don't have an account?{' '}
+            {/* Sign Up Link */}
+            <div className="text-center mt-6">
+              <p className="text-white/70 text-sm">
+                Don't have an account?{' '}
+                <button
+                  onClick={() => router.push('/signup')}
+                  className="text-white font-semibold hover:underline"
+                >
+                  Sign Up
+                </button>
+              </p>
+            </div>
+
+            {/* Back to Home */}
+            <div className="text-center mt-4">
               <button
-                onClick={() => router.push('/signup')}
-                className="text-white font-semibold hover:underline"
+                onClick={() => router.push('/')}
+                className="text-white/60 hover:text-white/80 text-sm transition-colors"
               >
-                Sign Up
+                ← Back to Surf Report
               </button>
-            </p>
-          </div>
-
-          {/* Back to Home */}
-          <div className="text-center mt-4">
-            <button
-              onClick={() => router.push('/')}
-              className="text-white/60 hover:text-white/80 text-sm transition-colors"
-            >
-              ← Back to Surf Report
-            </button>
+            </div>
           </div>
         </div>
       </div>

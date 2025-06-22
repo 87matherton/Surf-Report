@@ -54,7 +54,7 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
   };
 
   return (
-    <div className={`relative min-h-screen ${className}`}>
+    <div className={`relative min-h-screen w-full overflow-hidden ${className}`} style={{ minHeight: '100vh', width: '100vw' }}>
       {/* Video Background */}
       {videoUrl && (
         <video
@@ -67,11 +67,20 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
           onLoadedData={handleVideoLoad}
           onError={handleVideoError}
           onCanPlay={handleVideoLoad}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+          className={`absolute transition-opacity duration-1000 ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            filter: 'brightness(0.8)', // Slightly less darkening to show video better
+            filter: 'brightness(0.8)',
+            top: '50%',
+            left: '50%',
+            minWidth: '100vw',
+            minHeight: '100vh',
+            width: '100vw',
+            height: '100vh',
+            transform: 'translate(-50%, -50%) scale(1.2)',
+            objectFit: 'cover',
+            zIndex: -1,
           }}
         >
           <source src={videoUrl} type="video/mp4" />
@@ -102,12 +111,16 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
         />
       )}
       
-      {/* Glass effects - lighter when video is playing */}
-      <div className={`absolute inset-0 ${videoUrl && videoLoaded ? 'bg-blue-900/10' : 'bg-blue-900/30'}`} />
-      <div className="absolute inset-0 bg-white/15" />
-      <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/5 to-white/15" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
+      {/* Glass effects - much lighter when video is playing */}
+      <div className={`absolute inset-0 ${videoUrl && videoLoaded ? 'bg-blue-900/5' : 'bg-blue-900/30'}`} />
+      {!(videoUrl && videoLoaded) && (
+        <>
+          <div className="absolute inset-0 bg-white/15" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/5 to-white/15" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
+        </>
+      )}
       
       {/* Content */}
       <div className="relative z-10">
