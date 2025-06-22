@@ -179,7 +179,7 @@ const WestCoastMap = () => {
   };
 
   return (
-    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 overflow-hidden">
+    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600">
       {/* Zoom Controls */}
       <ZoomControls 
         zoom={zoom}
@@ -340,23 +340,154 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Subtle coastal background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-sky-100 via-blue-50 to-blue-100"></div>
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-blue-100">
+      {/* Coastal Background with Frosted Glass Overlay */}
+      <div className="fixed inset-0 bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600 opacity-30 pointer-events-none"></div>
+      <div className="fixed inset-0 bg-white/20 backdrop-blur-sm pointer-events-none"></div>
+      <div className="fixed inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20 pointer-events-none"></div>
       
-      {/* Content */}
-      <div className="relative z-10 w-full h-full">
+      {/* Scrollable Content */}
+      <div className="relative z-10">
+        {/* Fixed Elements */}
         <SearchButton onClick={() => setIsSearchModalOpen(true)} />
         <UserAvatar />
-        <ZoomControls 
-          zoom={1} 
-          onZoomIn={() => {}} 
-          onZoomOut={() => {}} 
-          onReset={() => {}} 
-        />
-        <WestCoastMap />
-        <CenterLocationPin />
-        <SurfSpotCards />
+        
+        {/* Map Section - Fixed height but allows page scrolling */}
+        <div className="w-full relative" style={{ height: '70vh' }}>
+          <WestCoastMap />
+          <CenterLocationPin />
+          <SurfSpotCards />
+        </div>
+        
+        {/* Scrollable content below the map */}
+        <div className="px-4 py-6 space-y-6">
+          {/* Popular Spots Section */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-white/20 apple-transition">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Popular Surf Spots</h2>
+            <div className="grid gap-3">
+              {getWestCoastSpots().slice(0, 5).map((spot) => (
+                <div key={spot.id} className="flex items-center justify-between p-3 bg-white/50 rounded-lg hover:bg-white/70 transition-all duration-200 apple-transition">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{spot.name}</h3>
+                    <p className="text-gray-600 text-sm">{spot.region}, {spot.state}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-900">{spot.currentConditions.swellHeight}ft</div>
+                    <div className="text-sm text-gray-600">{spot.currentConditions.windSpeed}mph {spot.currentConditions.windDirection}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Today's Conditions Overview */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-white/20 apple-transition">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Today's Overview</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 bg-white/50 rounded-lg hover:scale-105 transition-transform duration-200 apple-transition">
+                <div className="text-2xl mb-1">🌊</div>
+                <div className="text-lg font-bold text-gray-900">3-6ft</div>
+                <div className="text-sm text-gray-600">Average Waves</div>
+              </div>
+              <div className="text-center p-3 bg-white/50 rounded-lg hover:scale-105 transition-transform duration-200 apple-transition">
+                <div className="text-2xl mb-1">💨</div>
+                <div className="text-lg font-bold text-gray-900">12mph</div>
+                <div className="text-sm text-gray-600">Average Wind</div>
+              </div>
+              <div className="text-center p-3 bg-white/50 rounded-lg hover:scale-105 transition-transform duration-200 apple-transition">
+                <div className="text-2xl mb-1">🌡️</div>
+                <div className="text-lg font-bold text-gray-900">68°F</div>
+                <div className="text-sm text-gray-600">Water Temp</div>
+              </div>
+              <div className="text-center p-3 bg-white/50 rounded-lg hover:scale-105 transition-transform duration-200 apple-transition">
+                <div className="text-2xl mb-1">☀️</div>
+                <div className="text-lg font-bold text-gray-900">72°F</div>
+                <div className="text-sm text-gray-600">Air Temp</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Tips */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-white/20 apple-transition">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Surf Tips</h2>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 hover:bg-white/30 p-2 rounded-lg transition-all duration-200 apple-transition">
+                <div className="text-blue-500 text-xl">💡</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Best Times</h3>
+                  <p className="text-gray-600 text-sm">Early morning (6-9am) and late afternoon (4-7pm) typically offer the best conditions.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 hover:bg-white/30 p-2 rounded-lg transition-all duration-200 apple-transition">
+                <div className="text-green-500 text-xl">🎯</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Check the Tide</h3>
+                  <p className="text-gray-600 text-sm">Most spots work best 2 hours before to 2 hours after high tide.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 hover:bg-white/30 p-2 rounded-lg transition-all duration-200 apple-transition">
+                <div className="text-yellow-500 text-xl">⚠️</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Safety First</h3>
+                  <p className="text-gray-600 text-sm">Always check local conditions and surf with a buddy when possible.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* More Content Sections */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-white/20 apple-transition">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Surf Reports</h2>
+            <div className="space-y-3">
+              <div className="p-3 bg-white/50 rounded-lg">
+                <h3 className="font-semibold text-gray-900">Morning Report</h3>
+                <p className="text-gray-600 text-sm">Clean conditions with offshore winds. Perfect for dawn patrol sessions.</p>
+              </div>
+              <div className="p-3 bg-white/50 rounded-lg">
+                <h3 className="font-semibold text-gray-900">Afternoon Forecast</h3>
+                <p className="text-gray-600 text-sm">Wind expected to pick up around 2pm. Best to surf before then.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-white/20 apple-transition">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Tide Times</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-blue-600 text-sm font-medium">High Tide</div>
+                <div className="text-gray-900 font-bold text-lg">6:42 AM</div>
+                <div className="text-gray-600 text-sm">5.2 ft</div>
+              </div>
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-blue-600 text-sm font-medium">Low Tide</div>
+                <div className="text-gray-900 font-bold text-lg">12:18 PM</div>
+                <div className="text-gray-600 text-sm">1.8 ft</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Add more sections to demonstrate scrolling */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-white/20 apple-transition">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Local Weather</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center p-3 bg-white/50 rounded-lg">
+                <div className="text-2xl mb-1">☀️</div>
+                <div className="text-sm font-medium text-gray-900">Sunny</div>
+                <div className="text-xs text-gray-600">72°F</div>
+              </div>
+              <div className="text-center p-3 bg-white/50 rounded-lg">
+                <div className="text-2xl mb-1">🌤️</div>
+                <div className="text-sm font-medium text-gray-900">Partly Cloudy</div>
+                <div className="text-xs text-gray-600">68°F</div>
+              </div>
+              <div className="text-center p-3 bg-white/50 rounded-lg">
+                <div className="text-2xl mb-1">🌊</div>
+                <div className="text-sm font-medium text-gray-900">Good Waves</div>
+                <div className="text-xs text-gray-600">4-6ft</div>
+              </div>
+            </div>
+          </div>
+        </div>
         
         {/* Search Modal */}
         <SearchModal 

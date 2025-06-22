@@ -7,28 +7,20 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'WaveCheck - Surf Report',
-  description: 'Real-time surf conditions and forecasts for your favorite spots',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'WaveCheck',
+  title: "Surf Report",
+  description: "Real-time surf conditions and forecasts",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192x192.svg", sizes: "192x192", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/icons/icon-152x152.svg", sizes: "152x152", type: "image/svg+xml" },
+    ],
   },
-  formatDetection: {
-    telephone: false,
-  },
-  openGraph: {
-    type: 'website',
-    siteName: 'WaveCheck',
-    title: 'WaveCheck - Surf Report',
-    description: 'Real-time surf conditions and forecasts for your favorite spots',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'WaveCheck - Surf Report',
-    description: 'Real-time surf conditions and forecasts for your favorite spots',
-  },
+  themeColor: "#0ea5e9",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export const viewport = {
@@ -41,11 +33,11 @@ export const viewport = {
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-auto">
       <head>
         {/* PWA Meta Tags */}
         <meta name="application-name" content="WaveCheck" />
@@ -82,7 +74,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/icons/apple-splash-750-1334.jpg" sizes="750x1334" />
         <link rel="apple-touch-startup-image" href="/icons/apple-splash-640-1136.jpg" sizes="640x1136" />
       </head>
-      <body suppressHydrationWarning={true} className={inter.className}>
+      <body suppressHydrationWarning={true} className={`${inter.className} antialiased h-auto min-h-screen`}>
         <ClientThemeProvider>
           {children}
         </ClientThemeProvider>
@@ -91,6 +83,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Service Worker Registration
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js')
@@ -147,10 +140,32 @@ export default function RootLayout({
               window.addEventListener('appinstalled', (evt) => {
                 console.log('WaveCheck was installed');
               });
-            `,
+              
+              // Enhanced Scrolling
+              document.addEventListener('DOMContentLoaded', function() {
+                // Enable momentum scrolling on iOS
+                if ('ontouchstart' in window) {
+                  document.body.style.webkitOverflowScrolling = 'touch';
+                }
+                
+                // Smooth anchor scrolling
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                  anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                      target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                      });
+                    }
+                  });
+                });
+              });
+            `
           }}
         />
       </body>
     </html>
-  )
+  );
 }
