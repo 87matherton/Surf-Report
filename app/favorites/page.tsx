@@ -134,7 +134,7 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-md mx-auto px-4 py-6 pb-24">
         {/* Error Message */}
         {liveDataState.error && (
           <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-4">

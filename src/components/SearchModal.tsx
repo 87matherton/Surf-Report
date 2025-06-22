@@ -14,7 +14,7 @@ interface SearchModalProps {
 const SearchResultItem = ({ spot, onClick }: { spot: SurfSpot; onClick: () => void }) => (
   <button
     onClick={onClick}
-    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left border-b border-white/10 last:border-b-0"
+    className="w-full flex items-center justify-between p-4 hover:bg-white/10 hover:backdrop-blur-sm transition-all duration-200 text-left border-b border-white/10 last:border-b-0"
   >
     <div className="flex-1">
       <div className="flex items-center gap-2 mb-1">
@@ -98,7 +98,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSpotSelect
       />
       
       {/* Search Modal */}
-      <div className="bg-gradient-to-b from-blue-500 to-blue-600 rounded-2xl w-full max-w-md mx-4 mt-8 relative shadow-2xl border border-white/20 max-h-[85vh] overflow-hidden">
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl w-full max-w-md mx-4 mt-8 relative shadow-2xl border border-white/20 max-h-[85vh] overflow-hidden">
         {/* Search Input */}
         <div className="p-4 border-b border-white/20">
           <div className="relative">
@@ -107,7 +107,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSpotSelect
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search surf spots..."
-              className="w-full px-4 py-3 pr-12 text-lg bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/30"
+              className="w-full px-4 py-3 pr-12 text-lg bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/20 transition-all duration-200"
               autoFocus
             />
             <button
@@ -143,7 +143,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSpotSelect
                     <button
                       key={spot.id}
                       onClick={() => handlePopularSpotClick(spot.name)}
-                      className="w-full flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-left"
+                      className="w-full flex items-center justify-between p-3 bg-white/5 backdrop-blur-sm hover:bg-white/15 rounded-lg transition-all duration-200 text-left border border-white/10 hover:border-white/20"
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">{getQualityEmoji(spot.conditionsRating)}</span>
@@ -162,7 +162,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSpotSelect
               </div>
 
               {/* Search Tips */}
-              <div className="mt-6 p-4 bg-white/10 rounded-lg">
+              <div className="mt-6 p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
                 <p className="text-white/80 text-sm font-medium mb-2">Search Tips:</p>
                 <ul className="text-white/60 text-xs space-y-1">
                   <li>• Try "beginner", "advanced", or "expert" for difficulty</li>
@@ -189,7 +189,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSpotSelect
               <p className="text-white/70 text-sm mb-4">Try searching for a different location or condition</p>
               <button
                 onClick={() => setSearchQuery('')}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all duration-200 border border-white/20 hover:border-white/30"
               >
                 Clear Search
               </button>

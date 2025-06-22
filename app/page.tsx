@@ -117,7 +117,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-md mx-auto px-4 py-6 pb-24 space-y-6">
         {/* Error Message */}
         {liveDataState.error && (
           <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">

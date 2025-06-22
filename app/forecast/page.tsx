@@ -184,7 +184,7 @@ export default function ForecastPage() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-md mx-auto px-4 py-6 pb-24">
         {/* Current Conditions */}
         <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20 mb-6">
           <div className="flex items-center justify-between mb-3">
