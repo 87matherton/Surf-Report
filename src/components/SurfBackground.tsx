@@ -104,7 +104,7 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
       
       {/* Glass effects - lighter when video is playing */}
       <div className={`absolute inset-0 ${videoUrl && videoLoaded ? 'bg-blue-900/10' : 'bg-blue-900/30'}`} />
-      <div className="absolute inset-0 backdrop-blur-sm bg-white/15" />
+      <div className="absolute inset-0 bg-white/15" />
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/5 to-white/15" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
