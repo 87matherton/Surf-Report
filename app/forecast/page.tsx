@@ -6,6 +6,9 @@ import { useLiveData, useLiveDataFormatters } from '../../src/hooks/useLiveData'
 import { weatherService } from '../../src/services/weatherService';
 import { getQualityEmoji } from '../../src/utils/surfUtils';
 import BottomNavigation from '../../src/components/BottomNavigation';
+import SearchModal from '../../src/components/SearchModal';
+import SearchButton from '../../src/components/SearchButton';
+import SurfBackground from '../../src/components/SurfBackground';
 
 export default function ForecastPage() {
   const { 
@@ -22,9 +25,10 @@ export default function ForecastPage() {
   const [forecastData, setForecastData] = useState<any[]>([]);
   const [isLoadingForecast, setIsLoadingForecast] = useState(false);
   const [activeTab, setActiveTab] = useState('7-day');
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Popular spots for quick access
-  const popularSpotIds = ['mavericks', 'pipeline', 'malibu', 'steamer-lane'];
+  const popularSpotIds = ['nc1', 'sc1', 'cc1', 'nc3'];
   const popularSpots = surfSpots.filter(spot => popularSpotIds.includes(spot.id));
 
   // Load 7-day forecast for selected spot
@@ -116,7 +120,7 @@ export default function ForecastPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600">
+    <SurfBackground>
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4">
@@ -132,20 +136,23 @@ export default function ForecastPage() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={isLoadingForecast}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
-            >
-              <svg 
-                className={`w-5 h-5 text-white ${isLoadingForecast ? 'animate-spin' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-3">
+              <SearchButton onClick={() => setIsSearchModalOpen(true)} />
+              <button
+                onClick={handleRefresh}
+                disabled={isLoadingForecast}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
+                <svg 
+                  className={`w-5 h-5 text-white ${isLoadingForecast ? 'animate-spin' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Spot Selector */}
@@ -205,19 +212,20 @@ export default function ForecastPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white/10 rounded-lg p-3">
               <p className="text-white/70 text-xs uppercase tracking-wide">Wave Height</p>
-              <p className="text-white font-bold text-lg">{updatedSelectedSpot.currentConditions.swellHeight}ft</p>
+              <p className="text-white font-bold text-xl">{updatedSelectedSpot.currentConditions.swellHeight}ft</p>
             </div>
             <div className="bg-white/10 rounded-lg p-3">
               <p className="text-white/70 text-xs uppercase tracking-wide">Period</p>
-              <p className="text-white font-bold text-lg">{updatedSelectedSpot.currentConditions.swellPeriod}s</p>
+              <p className="text-white font-bold text-xl">{updatedSelectedSpot.currentConditions.swellPeriod}s</p>
             </div>
             <div className="bg-white/10 rounded-lg p-3">
               <p className="text-white/70 text-xs uppercase tracking-wide">Wind</p>
-              <p className="text-white font-bold text-lg">{updatedSelectedSpot.currentConditions.windSpeed}mph {updatedSelectedSpot.currentConditions.windDirection}</p>
+              <p className="text-white font-bold text-base">{updatedSelectedSpot.currentConditions.windSpeed}mph</p>
+              <p className="text-white/80 text-sm">{updatedSelectedSpot.currentConditions.windDirection}</p>
             </div>
             <div className="bg-white/10 rounded-lg p-3">
               <p className="text-white/70 text-xs uppercase tracking-wide">Water Temp</p>
-              <p className="text-white font-bold text-lg">{updatedSelectedSpot.currentConditions.waterTemp}°F</p>
+              <p className="text-white font-bold text-xl">{updatedSelectedSpot.currentConditions.waterTemp}°F</p>
             </div>
           </div>
         </div>
@@ -240,42 +248,48 @@ export default function ForecastPage() {
               {forecastData.map((day, index) => {
                 const quality = getForecastQuality(day);
                 return (
-                  <div key={index} className="bg-white/10 rounded-lg p-3 hover:bg-white/20 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-white font-semibold w-20">{formatDate(day.date)}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{getQualityEmoji(quality)}</span>
-                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionsBadgeColor(quality)} text-white`}>
-                            {quality}
+                  <div key={index} className="bg-white/10 rounded-lg p-4 hover:bg-white/20 transition-colors">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-white font-semibold text-base">{formatDate(day.date)}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{getQualityEmoji(quality)}</span>
+                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionsBadgeColor(quality)} text-white`}>
+                              {quality}
+                            </div>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-white font-bold">{day.swellHeight}ft</p>
-                        <p className="text-white/70 text-sm">{day.swellPeriod}s</p>
+                        <p className="text-white font-bold text-lg">{day.swellHeight}ft</p>
+                        <p className="text-white/70 text-sm">{day.swellPeriod}s period</p>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-2 text-sm text-white/80">
-                      <div>
-                        <span className="text-white/60">Wind: </span>
-                        {day.windSpeed}mph {day.windDirection}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                      <div className="bg-white/10 rounded-lg p-2">
+                        <p className="text-white/60 text-xs uppercase tracking-wide">Wind</p>
+                        <p className="text-white font-medium">{day.windSpeed}mph {day.windDirection}</p>
                       </div>
-                      <div>
-                        <span className="text-white/60">Air: </span>
-                        {day.airTemp}°F
+                      <div className="bg-white/10 rounded-lg p-2">
+                        <p className="text-white/60 text-xs uppercase tracking-wide">Air Temp</p>
+                        <p className="text-white font-medium">{day.airTemp}°F</p>
                       </div>
-                      <div>
-                        <span className="text-white/60">Water: </span>
-                        {day.waterTemp}°F
+                      <div className="bg-white/10 rounded-lg p-2 col-span-2 sm:col-span-1">
+                        <p className="text-white/60 text-xs uppercase tracking-wide">Water Temp</p>
+                        <p className="text-white font-medium">{day.waterTemp}°F</p>
                       </div>
                     </div>
                     
                     {day.precipitation > 0 && (
-                      <div className="mt-2 text-sm text-blue-200">
-                        <span className="text-white/60">Rain: </span>
-                        {day.precipitation.toFixed(1)}mm
+                      <div className="mt-3 p-2 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-200">🌧️</span>
+                          <span className="text-blue-200 text-sm">
+                            <span className="font-medium">{day.precipitation.toFixed(1)}mm</span> precipitation
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -288,6 +302,15 @@ export default function ForecastPage() {
 
       {/* Bottom Navigation */}
       <BottomNavigation />
-    </div>
+      
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onSpotSelect={(spot) => {
+          setSelectedSpot(spot);
+                 }}
+       />
+    </SurfBackground>
   );
 } 

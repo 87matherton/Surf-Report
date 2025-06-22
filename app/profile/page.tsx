@@ -1,8 +1,9 @@
 import BottomNavigation from '../../src/components/BottomNavigation';
+import SurfBackground from '../../src/components/SurfBackground';
 
 export default function ProfilePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 relative overflow-hidden">
+    <SurfBackground className="relative overflow-hidden">
       {/* Background Ocean Pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-300/20 to-blue-700/20"></div>
@@ -126,6 +127,6 @@ export default function ProfilePage() {
 
       {/* Bottom Navigation */}
       <BottomNavigation />
-    </div>
+    </SurfBackground>
   );
 } 

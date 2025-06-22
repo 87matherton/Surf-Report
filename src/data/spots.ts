@@ -488,10 +488,58 @@ export const getPopularSpots = (): SurfSpot[] => {
 };
 
 export const searchSpots = (query: string): SurfSpot[] => {
+  if (!query.trim()) return [];
+  
   const lowercaseQuery = query.toLowerCase();
-  return surfSpots.filter(spot => 
-    spot.name.toLowerCase().includes(lowercaseQuery) ||
-    spot.region.toLowerCase().includes(lowercaseQuery) ||
-    spot.description.toLowerCase().includes(lowercaseQuery)
-  );
+  
+  return surfSpots.filter(spot => {
+    // Basic text search
+    const matchesBasic = 
+      spot.name.toLowerCase().includes(lowercaseQuery) ||
+      spot.region.toLowerCase().includes(lowercaseQuery) ||
+      spot.state.toLowerCase().includes(lowercaseQuery) ||
+      spot.description.toLowerCase().includes(lowercaseQuery);
+    
+    // Difficulty search
+    const matchesDifficulty = spot.difficulty.toLowerCase().includes(lowercaseQuery);
+    
+    // Conditions rating search
+    const matchesRating = spot.conditionsRating.toLowerCase().includes(lowercaseQuery);
+    
+    // Break info search
+    const matchesBreakInfo = spot.breakInfo ? (
+      spot.breakInfo.type.toLowerCase().includes(lowercaseQuery) ||
+      spot.breakInfo.bottom.toLowerCase().includes(lowercaseQuery) ||
+      spot.breakInfo.experience.toLowerCase().includes(lowercaseQuery) ||
+      (spot.breakInfo.peakSections && spot.breakInfo.peakSections.some(section => 
+        section.toLowerCase().includes(lowercaseQuery)
+      )) ||
+      spot.breakInfo.hazards.some(hazard => 
+        hazard.toLowerCase().includes(lowercaseQuery)
+      )
+    ) : false;
+    
+    // Best conditions search
+    const matchesBestConditions = 
+      spot.bestConditions.swellDirection.some(dir => 
+        dir.toLowerCase().includes(lowercaseQuery)
+      ) ||
+      spot.bestConditions.windDirection.some(dir => 
+        dir.toLowerCase().includes(lowercaseQuery)
+      ) ||
+      spot.bestConditions.tide.some(tide => 
+        tide.toLowerCase().includes(lowercaseQuery)
+      ) ||
+      spot.bestConditions.swellSize.toLowerCase().includes(lowercaseQuery);
+    
+    // Photo tags search (if photos exist)
+    const matchesPhotoTags = spot.photos ? spot.photos.some(photo => 
+      photo.tags && photo.tags.some(tag => 
+        tag.toLowerCase().includes(lowercaseQuery)
+      )
+    ) : false;
+    
+    return matchesBasic || matchesDifficulty || matchesRating || 
+           matchesBreakInfo || matchesBestConditions || matchesPhotoTags;
+  });
 }; 

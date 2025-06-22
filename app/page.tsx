@@ -5,6 +5,9 @@ import { surfSpots } from '../src/data/spots';
 import { useLiveData, useLiveDataFormatters } from '../src/hooks/useLiveData';
 import { getQualityColor, getQualityEmoji } from '../src/utils/surfUtils';
 import BottomNavigation from '../src/components/BottomNavigation';
+import SearchModal from '../src/components/SearchModal';
+import SearchButton from '../src/components/SearchButton';
+import SurfBackground from '../src/components/SurfBackground';
 
 export default function HomePage() {
   const { 
@@ -20,9 +23,10 @@ export default function HomePage() {
 
   const [spots, setSpots] = useState(surfSpots);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Popular spot IDs to feature
-  const popularSpotIds = ['mavericks', 'pipeline', 'malibu', 'steamer-lane'];
+  const popularSpotIds = ['nc1', 'sc1', 'cc1', 'nc3'];
   const popularSpots = spots.filter(spot => popularSpotIds.includes(spot.id));
   const featuredSpot = popularSpots[0];
 
@@ -64,7 +68,7 @@ export default function HomePage() {
   const updatedPopularSpots = popularSpots.map(getUpdatedSpot);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600">
+    <SurfBackground>
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="max-w-md mx-auto px-4 py-4">
@@ -80,20 +84,23 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={liveDataState.isLoading}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
-            >
-              <svg 
-                className={`w-5 h-5 text-white ${liveDataState.isLoading ? 'animate-spin' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-3">
+              <SearchButton onClick={() => setIsSearchModalOpen(true)} />
+              <button
+                onClick={handleRefresh}
+                disabled={liveDataState.isLoading}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
+                <svg 
+                  className={`w-5 h-5 text-white ${liveDataState.isLoading ? 'animate-spin' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -216,6 +223,12 @@ export default function HomePage() {
 
       {/* Bottom Navigation */}
       <BottomNavigation />
-    </div>
+      
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={isSearchModalOpen}
+                 onClose={() => setIsSearchModalOpen(false)}
+       />
+    </SurfBackground>
   );
 }
