@@ -77,19 +77,19 @@ export default function HomePage() {
     <SurfBackground imageUrl="/HomeBackground.png">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="max-w-md mx-auto px-4 py-4">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">Surf Report</h1>
-              <div className="flex items-center gap-2 mt-1">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">Surf Report</h1>
+              <div className="flex items-center gap-2 md:gap-3 mt-1">
                 <div className="flex items-center gap-1">
                   <div className={`w-2 h-2 rounded-full ${liveDataState.isLoading ? 'bg-yellow-400 animate-pulse' : hasUpdatedSpots ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                  <span className="text-white/80 text-sm">
+                  <span className="text-white/80 text-sm md:text-base">
                     {liveDataState.isLoading ? 'Updating...' : `Updated ${formatLastUpdated(liveDataState.lastUpdated)}`}
                   </span>
                 </div>
                 {isSignedIn && (
-                  <span className="text-white/60 text-xs">
+                  <span className="text-white/60 text-xs md:text-sm">
                     Welcome, {user?.name}!
                   </span>
                 )}
@@ -101,10 +101,10 @@ export default function HomePage() {
               <button
                 onClick={handleRefresh}
                 disabled={liveDataState.isLoading}
-                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
+                className="p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
               >
                 <svg 
-                  className={`w-5 h-5 text-white ${liveDataState.isLoading ? 'animate-spin' : ''}`} 
+                  className={`w-5 h-5 md:w-6 md:h-6 text-white ${liveDataState.isLoading ? 'animate-spin' : ''}`} 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -117,7 +117,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 py-6 pb-24 space-y-6">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 pb-24 space-y-6 md:space-y-8">
         {/* Error Message */}
         {liveDataState.error && (
           <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
@@ -127,46 +127,46 @@ export default function HomePage() {
 
         {/* Featured Spot */}
         {updatedFeaturedSpot && (
-          <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-white">Featured Spot</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 md:p-6 lg:p-8 border border-white/20">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-white">Featured Spot</h2>
               {isSpotUpdated(updatedFeaturedSpot.id) && (
-                <span className="px-2 py-1 bg-green-500/20 rounded-full text-xs text-green-200 border border-green-500/30">
+                <span className="px-2 py-1 md:px-3 md:py-1.5 bg-green-500/20 rounded-full text-xs md:text-sm text-green-200 border border-green-500/30">
                   Live
                 </span>
               )}
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-3 md:space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                                     <h3 className="text-xl font-bold text-white">{updatedFeaturedSpot.name}</h3>
-                   <p className="text-white/70 text-sm">{updatedFeaturedSpot.region}</p>
+                  <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white">{updatedFeaturedSpot.name}</h3>
+                  <p className="text-white/70 text-sm md:text-base">{updatedFeaturedSpot.region}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getQualityEmoji(updatedFeaturedSpot.conditionsRating)}</span>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${getConditionsBadgeColor(updatedFeaturedSpot.conditionsRating)} text-white`}>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <span className="text-2xl md:text-3xl lg:text-4xl">{getQualityEmoji(updatedFeaturedSpot.conditionsRating)}</span>
+                  <div className={`px-3 py-1 md:px-4 md:py-2 rounded-full text-sm md:text-base font-medium ${getConditionsBadgeColor(updatedFeaturedSpot.conditionsRating)} text-white`}>
                     {updatedFeaturedSpot.conditionsRating}
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs uppercase tracking-wide">Wave Height</p>
-                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.swellHeight}ft</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div className="bg-white/10 rounded-lg p-3 md:p-4">
+                  <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Wave Height</p>
+                  <p className="text-white font-semibold text-lg md:text-xl lg:text-2xl">{updatedFeaturedSpot.currentConditions.swellHeight}ft</p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs uppercase tracking-wide">Wind</p>
-                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.windSpeed}mph {updatedFeaturedSpot.currentConditions.windDirection}</p>
+                <div className="bg-white/10 rounded-lg p-3 md:p-4">
+                  <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Wind</p>
+                  <p className="text-white font-semibold text-lg md:text-xl lg:text-2xl">{updatedFeaturedSpot.currentConditions.windSpeed}mph {updatedFeaturedSpot.currentConditions.windDirection}</p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs uppercase tracking-wide">Water Temp</p>
-                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.waterTemp}°F</p>
+                <div className="bg-white/10 rounded-lg p-3 md:p-4">
+                  <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Water Temp</p>
+                  <p className="text-white font-semibold text-lg md:text-xl lg:text-2xl">{updatedFeaturedSpot.currentConditions.waterTemp}°F</p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs uppercase tracking-wide">Period</p>
-                  <p className="text-white font-semibold text-lg">{updatedFeaturedSpot.currentConditions.swellPeriod}s</p>
+                <div className="bg-white/10 rounded-lg p-3 md:p-4">
+                  <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Period</p>
+                  <p className="text-white font-semibold text-lg md:text-xl lg:text-2xl">{updatedFeaturedSpot.currentConditions.swellPeriod}s</p>
                 </div>
               </div>
             </div>
@@ -174,32 +174,32 @@ export default function HomePage() {
         )}
 
         {/* Popular Spots */}
-        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20">
-          <h2 className="text-lg font-semibold text-white mb-4">Popular Spots</h2>
+        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 md:p-6 lg:p-8 border border-white/20">
+          <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-white mb-4 md:mb-6">Popular Spots</h2>
           
-          <div className="space-y-3">
+          <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 md:gap-4 lg:gap-6 md:space-y-0">
             {updatedPopularSpots.map((spot) => (
-              <div key={spot.id} className="bg-white/10 rounded-lg p-3 hover:bg-white/20 transition-colors">
+              <div key={spot.id} className="bg-white/10 rounded-lg p-3 md:p-4 lg:p-5 hover:bg-white/20 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-white">{spot.name}</h3>
+                    <div className="flex items-center justify-between mb-1 md:mb-2">
+                      <h3 className="font-semibold text-white text-sm md:text-base lg:text-lg">{spot.name}</h3>
                       <div className="flex items-center gap-2">
                         {isSpotUpdated(spot.id) && (
                           <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                         )}
-                        <span className="text-lg">{getQualityEmoji(spot.conditionsRating)}</span>
+                        <span className="text-lg md:text-xl lg:text-2xl">{getQualityEmoji(spot.conditionsRating)}</span>
                       </div>
                     </div>
-                                         <p className="text-white/70 text-sm mb-2">{spot.region}</p>
+                    <p className="text-white/70 text-xs md:text-sm mb-2 md:mb-3">{spot.region}</p>
                     
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-white/80">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-4">
+                      <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-white/80 flex-wrap">
                         <span>{spot.currentConditions.swellHeight}ft</span>
                         <span>{spot.currentConditions.windSpeed}mph {spot.currentConditions.windDirection}</span>
                         <span>{spot.currentConditions.waterTemp}°F</span>
                       </div>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionsBadgeColor(spot.conditionsRating)} text-white`}>
+                      <div className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-medium ${getConditionsBadgeColor(spot.conditionsRating)} text-white shrink-0`}>
                         {spot.conditionsRating}
                       </div>
                     </div>
@@ -211,22 +211,34 @@ export default function HomePage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20">
-          <h2 className="text-lg font-semibold text-white mb-4">Today's Summary</h2>
+        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 md:p-6 lg:p-8 border border-white/20">
+          <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-white mb-4 md:mb-6">Today's Summary</h2>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="text-white/70 text-sm">Best Conditions</p>
-              <p className="text-white font-semibold">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div className="text-center md:col-span-2 lg:col-span-1">
+              <p className="text-white/70 text-sm md:text-base">Best Conditions</p>
+              <p className="text-white font-semibold text-base md:text-lg lg:text-xl">
                 {updatedPopularSpots.find(s => s.conditionsRating === 'Excellent')?.name || 
                  updatedPopularSpots.find(s => s.conditionsRating === 'Good')?.name || 
                  'Check back later'}
               </p>
             </div>
-            <div className="text-center">
-              <p className="text-white/70 text-sm">Avg Wave Height</p>
-              <p className="text-white font-semibold">
+            <div className="text-center md:col-span-2 lg:col-span-1">
+              <p className="text-white/70 text-sm md:text-base">Avg Wave Height</p>
+              <p className="text-white font-semibold text-base md:text-lg lg:text-xl">
                 {Math.round(updatedPopularSpots.reduce((sum, spot) => sum + spot.currentConditions.swellHeight, 0) / updatedPopularSpots.length * 10) / 10}ft
+              </p>
+            </div>
+            <div className="text-center col-span-2 md:col-span-2 lg:col-span-1">
+              <p className="text-white/70 text-sm md:text-base">Active Spots</p>
+              <p className="text-white font-semibold text-base md:text-lg lg:text-xl">
+                {updatedPopularSpots.length}
+              </p>
+            </div>
+            <div className="text-center col-span-2 md:col-span-2 lg:col-span-1">
+              <p className="text-white/70 text-sm md:text-base">Last Updated</p>
+              <p className="text-white font-semibold text-base md:text-lg lg:text-xl">
+                {formatLastUpdated(liveDataState.lastUpdated)}
               </p>
             </div>
           </div>

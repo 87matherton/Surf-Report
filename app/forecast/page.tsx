@@ -137,14 +137,14 @@ export default function ForecastPage() {
     <SurfBackground imageUrl="/ForecastBackground.png">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-white">Forecast</h1>
-              <div className="flex items-center gap-2 mt-1">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">Forecast</h1>
+              <div className="flex items-center gap-2 md:gap-3 mt-1">
                 <div className="flex items-center gap-1">
                   <div className={`w-2 h-2 rounded-full ${isLoadingForecast ? 'bg-yellow-400 animate-pulse' : hasUpdatedSpots ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                  <span className="text-white/80 text-sm">
+                  <span className="text-white/80 text-sm md:text-base">
                     {isLoadingForecast ? 'Loading...' : `Updated ${formatLastUpdated(liveDataState.lastUpdated)}`}
                   </span>
                 </div>
@@ -155,10 +155,10 @@ export default function ForecastPage() {
               <button
                 onClick={handleRefresh}
                 disabled={isLoadingForecast}
-                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
+                className="p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
               >
                 <svg 
-                  className={`w-5 h-5 text-white ${isLoadingForecast ? 'animate-spin' : ''}`} 
+                  className={`w-5 h-5 md:w-6 md:h-6 text-white ${isLoadingForecast ? 'animate-spin' : ''}`} 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -174,7 +174,7 @@ export default function ForecastPage() {
             <select
               value={selectedSpot.id}
               onChange={(e) => setSelectedSpot(surfSpots.find(s => s.id === e.target.value) || surfSpots[0])}
-              className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none"
+              className="w-full md:max-w-lg px-4 py-3 md:py-4 bg-white/20 border border-white/30 rounded-full text-white text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none"
             >
               <optgroup label="Popular Spots">
                 {popularSpots.map(spot => (
@@ -191,116 +191,116 @@ export default function ForecastPage() {
                 ))}
               </optgroup>
             </select>
-            <svg className="w-5 h-5 text-white/60 absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-white/60 absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 py-6 pb-24">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 pb-24 space-y-6 md:space-y-8">
         {/* Current Conditions */}
-        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-white">Current Conditions</h2>
+        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 md:p-6 lg:p-8 border border-white/20">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-white">Current Conditions</h2>
             {isSpotUpdated(updatedSelectedSpot.id) && (
-              <span className="px-2 py-1 bg-green-500/20 rounded-full text-xs text-green-200 border border-green-500/30">
+              <span className="px-2 py-1 md:px-3 md:py-1.5 bg-green-500/20 rounded-full text-xs md:text-sm text-green-200 border border-green-500/30">
                 Live
               </span>
             )}
           </div>
           
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
             <div>
-              <h3 className="text-xl font-bold text-white">{updatedSelectedSpot.name}</h3>
-              <p className="text-white/70 text-sm">{updatedSelectedSpot.region}, {updatedSelectedSpot.state}</p>
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white">{updatedSelectedSpot.name}</h3>
+              <p className="text-white/70 text-sm md:text-base">{updatedSelectedSpot.region}, {updatedSelectedSpot.state}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{getQualityEmoji(updatedSelectedSpot.conditionsRating)}</span>
-              <div className={`px-3 py-1 rounded-full text-sm font-medium ${getConditionsBadgeColor(updatedSelectedSpot.conditionsRating)} text-white`}>
+            <div className="flex items-center gap-2 md:gap-3">
+              <span className="text-2xl md:text-3xl lg:text-4xl">{getQualityEmoji(updatedSelectedSpot.conditionsRating)}</span>
+              <div className={`px-3 py-1 md:px-4 md:py-2 rounded-full text-sm md:text-base font-medium ${getConditionsBadgeColor(updatedSelectedSpot.conditionsRating)} text-white`}>
                 {updatedSelectedSpot.conditionsRating}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/10 rounded-lg p-3">
-              <p className="text-white/70 text-xs uppercase tracking-wide">Wave Height</p>
-              <p className="text-white font-bold text-xl">{updatedSelectedSpot.currentConditions.swellHeight}ft</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
+            <div className="bg-white/10 rounded-lg p-3 md:p-4">
+              <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Wave Height</p>
+              <p className="text-white font-bold text-xl md:text-2xl lg:text-3xl">{updatedSelectedSpot.currentConditions.swellHeight}ft</p>
             </div>
-            <div className="bg-white/10 rounded-lg p-3">
-              <p className="text-white/70 text-xs uppercase tracking-wide">Period</p>
-              <p className="text-white font-bold text-xl">{updatedSelectedSpot.currentConditions.swellPeriod}s</p>
+            <div className="bg-white/10 rounded-lg p-3 md:p-4">
+              <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Period</p>
+              <p className="text-white font-bold text-xl md:text-2xl lg:text-3xl">{updatedSelectedSpot.currentConditions.swellPeriod}s</p>
             </div>
-            <div className="bg-white/10 rounded-lg p-3">
-              <p className="text-white/70 text-xs uppercase tracking-wide">Wind</p>
-              <p className="text-white font-bold text-base">{updatedSelectedSpot.currentConditions.windSpeed}mph</p>
-              <p className="text-white/80 text-sm">{updatedSelectedSpot.currentConditions.windDirection}</p>
+            <div className="bg-white/10 rounded-lg p-3 md:p-4">
+              <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Wind</p>
+              <p className="text-white font-bold text-base md:text-lg lg:text-xl">{updatedSelectedSpot.currentConditions.windSpeed}mph</p>
+              <p className="text-white/80 text-sm md:text-base">{updatedSelectedSpot.currentConditions.windDirection}</p>
             </div>
-            <div className="bg-white/10 rounded-lg p-3">
-              <p className="text-white/70 text-xs uppercase tracking-wide">Water Temp</p>
-              <p className="text-white font-bold text-xl">{updatedSelectedSpot.currentConditions.waterTemp}°F</p>
+            <div className="bg-white/10 rounded-lg p-3 md:p-4">
+              <p className="text-white/70 text-xs md:text-sm uppercase tracking-wide">Water Temp</p>
+              <p className="text-white font-bold text-xl md:text-2xl lg:text-3xl">{updatedSelectedSpot.currentConditions.waterTemp}°F</p>
             </div>
           </div>
         </div>
 
         {/* Forecast */}
-        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 border border-white/20">
-          <h2 className="text-lg font-semibold text-white mb-4">7-Day Forecast</h2>
+        <div className="bg-white/10 backdrop-blur-md rounded-[15px] p-4 md:p-6 lg:p-8 border border-white/20">
+          <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-white mb-4 md:mb-6">7-Day Forecast</h2>
           
           {isLoadingForecast ? (
-            <div className="space-y-3">
+            <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 lg:gap-6 md:space-y-0">
               {[...Array(7)].map((_, i) => (
-                <div key={i} className="bg-white/10 rounded-lg p-3 animate-pulse">
+                <div key={i} className="bg-white/10 rounded-lg p-3 md:p-4 animate-pulse">
                   <div className="h-4 bg-white/20 rounded w-1/3 mb-2"></div>
                   <div className="h-3 bg-white/20 rounded w-1/2"></div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 lg:gap-6 md:space-y-0">
               {forecastData.map((day, index) => {
                 const quality = getForecastQuality(day);
                 return (
-                  <div key={index} className="bg-white/10 rounded-lg p-4 hover:bg-white/20 transition-colors">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-white font-semibold text-base">{formatDate(day.date)}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">{getQualityEmoji(quality)}</span>
-                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${getConditionsBadgeColor(quality)} text-white`}>
+                  <div key={index} className="bg-white/10 rounded-lg p-4 md:p-5 lg:p-6 hover:bg-white/20 transition-colors">
+                    <div className="flex flex-col md:flex-col items-start justify-between mb-3 md:mb-4">
+                      <div className="flex-1 w-full">
+                        <div className="flex flex-col md:flex-col items-start md:items-start gap-2 md:gap-3 mb-2 md:mb-3">
+                          <span className="text-white font-semibold text-base md:text-lg">{formatDate(day.date)}</span>
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <span className="text-xl md:text-2xl lg:text-3xl">{getQualityEmoji(quality)}</span>
+                            <div className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-medium ${getConditionsBadgeColor(quality)} text-white`}>
                               {quality}
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-white font-bold text-lg">{day.swellHeight}ft</p>
-                        <p className="text-white/70 text-sm">{day.swellPeriod}s period</p>
+                      <div className="text-left md:text-center w-full md:w-auto">
+                        <p className="text-white font-bold text-lg md:text-xl lg:text-2xl">{day.swellHeight}ft</p>
+                        <p className="text-white/70 text-sm md:text-base">{day.swellPeriod}s period</p>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                      <div className="bg-white/10 rounded-lg p-2">
-                        <p className="text-white/60 text-xs uppercase tracking-wide">Wind</p>
+                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-2 md:gap-3 text-sm md:text-base">
+                      <div className="bg-white/10 rounded-lg p-2 md:p-3">
+                        <p className="text-white/60 text-xs md:text-sm uppercase tracking-wide">Wind</p>
                         <p className="text-white font-medium">{day.windSpeed}mph {day.windDirection}</p>
                       </div>
-                      <div className="bg-white/10 rounded-lg p-2">
-                        <p className="text-white/60 text-xs uppercase tracking-wide">Air Temp</p>
+                      <div className="bg-white/10 rounded-lg p-2 md:p-3">
+                        <p className="text-white/60 text-xs md:text-sm uppercase tracking-wide">Air Temp</p>
                         <p className="text-white font-medium">{day.airTemp}°F</p>
                       </div>
-                      <div className="bg-white/10 rounded-lg p-2 col-span-2 sm:col-span-1">
-                        <p className="text-white/60 text-xs uppercase tracking-wide">Water Temp</p>
+                      <div className="bg-white/10 rounded-lg p-2 md:p-3">
+                        <p className="text-white/60 text-xs md:text-sm uppercase tracking-wide">Water Temp</p>
                         <p className="text-white font-medium">{day.waterTemp}°F</p>
                       </div>
                     </div>
                     
                     {day.precipitation > 0 && (
-                      <div className="mt-3 p-2 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                      <div className="mt-3 md:mt-4 p-2 md:p-3 bg-blue-500/20 rounded-lg border border-blue-500/30">
                         <div className="flex items-center gap-2">
-                          <span className="text-blue-200">🌧️</span>
-                          <span className="text-blue-200 text-sm">
+                          <span className="text-blue-200 text-lg md:text-xl">🌧️</span>
+                          <span className="text-blue-200 text-sm md:text-base">
                             <span className="font-medium">{day.precipitation.toFixed(1)}mm</span> precipitation
                           </span>
                         </div>
