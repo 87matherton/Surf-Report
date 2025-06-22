@@ -74,7 +74,7 @@ export default function HomePage() {
   const updatedPopularSpots = popularSpots.map(getUpdatedSpot);
 
   return (
-    <SurfBackground category="wave">
+    <SurfBackground imageUrl="/HomeBackground.png">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="max-w-md mx-auto px-4 py-4">

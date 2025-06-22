@@ -3,7 +3,7 @@ import SurfBackground from '../../src/components/SurfBackgroundNoSSR';
 
 export default function ProfilePage() {
   return (
-    <SurfBackground category="underwater" className="relative overflow-hidden">
+    <SurfBackground imageUrl="/ProfileBackground.png" className="relative overflow-hidden">
       {/* Background Ocean Pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-300/20 to-blue-700/20"></div>

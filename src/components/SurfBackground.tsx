@@ -6,6 +6,7 @@ import { getTimeBasedSurfBackground, getSurfBackgroundByCategory, createFallback
 interface SurfBackgroundProps {
   children: React.ReactNode;
   className?: string;
+  imageUrl?: string; // Optional: direct image URL (takes priority over category)
   category?: SurfBackgroundImage['category']; // Optional: force a specific category
   videoUrl?: string; // Optional: use a video background instead
   videoPoster?: string; // Optional: poster image for video
@@ -14,6 +15,7 @@ interface SurfBackgroundProps {
 const SurfBackground: React.FC<SurfBackgroundProps> = ({ 
   children, 
   className = '', 
+  imageUrl,
   category, 
   videoUrl,
   videoPoster 
@@ -23,25 +25,47 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
   const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
-    // Always get an image for fallback gradient
-    const selectedImage = category 
-      ? getSurfBackgroundByCategory(category)
-      : getTimeBasedSurfBackground();
-    
-    setCurrentImage(selectedImage);
-
-    if (!videoUrl) {
-      // Only preload image if not using video
-      setImageLoaded(false);
-      const img = new Image();
-      img.onload = () => setImageLoaded(true);
-      img.onerror = () => {
-        console.warn('Failed to load background image, using fallback');
-        setImageLoaded(false);
+    if (imageUrl) {
+      // Use direct image URL (highest priority)
+      const directImage: SurfBackgroundImage = {
+        id: 'custom',
+        url: imageUrl,
+        category: 'wave',
+        description: 'Custom background image',
+        fallbackColor: '#0ea5e9'
       };
-      img.src = selectedImage.url;
+      setCurrentImage(directImage);
+      
+      if (!videoUrl) {
+        setImageLoaded(false);
+        const img = new Image();
+        img.onload = () => setImageLoaded(true);
+        img.onerror = () => {
+          console.warn('Failed to load direct image, using fallback');
+          setImageLoaded(false);
+        };
+        img.src = imageUrl;
+      }
+    } else {
+      // Fallback to category system
+      const selectedImage = category 
+        ? getSurfBackgroundByCategory(category)
+        : getTimeBasedSurfBackground();
+      
+      setCurrentImage(selectedImage);
+
+      if (!videoUrl) {
+        setImageLoaded(false);
+        const img = new Image();
+        img.onload = () => setImageLoaded(true);
+        img.onerror = () => {
+          console.warn('Failed to load background image, using fallback');
+          setImageLoaded(false);
+        };
+        img.src = selectedImage.url;
+      }
     }
-  }, [category, videoUrl]);
+  }, [imageUrl, category, videoUrl]);
 
   const handleVideoLoad = () => {
     console.log('Video loaded successfully');
