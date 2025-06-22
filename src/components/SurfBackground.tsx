@@ -23,16 +23,16 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
   const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
+    // Always get an image for fallback gradient
+    const selectedImage = category 
+      ? getSurfBackgroundByCategory(category)
+      : getTimeBasedSurfBackground();
+    
+    setCurrentImage(selectedImage);
+
     if (!videoUrl) {
-      // Get background image based on category or time of day
-      const selectedImage = category 
-        ? getSurfBackgroundByCategory(category)
-        : getTimeBasedSurfBackground();
-      
-      setCurrentImage(selectedImage);
+      // Only preload image if not using video
       setImageLoaded(false);
-      
-      // Preload the image
       const img = new Image();
       img.onload = () => setImageLoaded(true);
       img.onerror = () => {
@@ -44,11 +44,12 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
   }, [category, videoUrl]);
 
   const handleVideoLoad = () => {
+    console.log('Video loaded successfully');
     setVideoLoaded(true);
   };
 
-  const handleVideoError = () => {
-    console.warn('Failed to load background video, using fallback');
+  const handleVideoError = (e: any) => {
+    console.error('Failed to load background video:', e);
     setVideoLoaded(false);
   };
 
@@ -61,26 +62,19 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           poster={videoPoster}
           onLoadedData={handleVideoLoad}
           onError={handleVideoError}
-          onCanPlay={() => setVideoLoaded(true)}
+          onCanPlay={handleVideoLoad}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            filter: 'brightness(0.7)', // Slightly darken video for better text readability
+            filter: 'brightness(0.7)',
           }}
         >
           <source src={videoUrl} type="video/mp4" />
-          {/* Fallback message */}
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-blue-800 flex items-center justify-center">
-            <p className="text-white/70 text-center">
-              Your browser does not support video backgrounds.<br />
-              Loading image fallback...
-            </p>
-          </div>
         </video>
       )}
 
@@ -96,7 +90,7 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
         />
       )}
 
-      {/* Fallback Ocean Wave Gradient Background (shows while loading) */}
+      {/* Fallback gradient - always visible initially */}
       <div 
         className={`absolute inset-0 transition-opacity duration-1000 ${
           (videoUrl ? videoLoaded : imageLoaded) ? 'opacity-0' : 'opacity-100'
@@ -108,16 +102,10 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
         }}
       />
       
-      {/* Color Overlay for better text readability */}
+      {/* Glass effects */}
       <div className="absolute inset-0 bg-blue-900/30" />
-      
-      {/* Frosted Glass Overlay Effect */}
       <div className="absolute inset-0 backdrop-blur-sm bg-white/15" />
-      
-      {/* Additional glass texture with subtle gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/5 to-white/15" />
-      
-      {/* Soft edge vignette for depth */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
       
@@ -125,6 +113,13 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
       <div className="relative z-10">
         {children}
       </div>
+
+      {/* Debug info */}
+      {process.env.NODE_ENV === 'development' && videoUrl && (
+        <div className="fixed top-4 right-4 bg-black/50 text-white p-2 rounded text-xs z-50">
+          Video: {videoLoaded ? '✅ Loaded' : '❌ Loading...'}
+        </div>
+      )}
     </div>
   );
 };

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import SurfBackground from '../../src/components/SurfBackground';
+import SurfBackground from '../../src/components/SurfBackgroundNoSSR';
 
 export default function SignInPage() {
   const router = useRouter();
