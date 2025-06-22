@@ -98,23 +98,6 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <SearchButton onClick={() => setIsSearchModalOpen(true)} />
               
-              {/* Auth Buttons */}
-              {isSignedIn ? (
-                <button
-                  onClick={signOut}
-                  className="px-3 py-2 text-sm bg-white/20 hover:bg-white/30 transition-colors rounded-full text-white/90"
-                >
-                  Sign Out
-                </button>
-              ) : (
-                <button
-                  onClick={() => router.push('/signin')}
-                  className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 transition-colors rounded-full text-white font-medium"
-                >
-                  Sign In
-                </button>
-              )}
-              
               <button
                 onClick={handleRefresh}
                 disabled={liveDataState.isLoading}

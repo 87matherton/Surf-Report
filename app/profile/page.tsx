@@ -61,7 +61,7 @@ export default function ProfilePage() {
             <div className="w-16 h-16 bg-gradient-to-br from-blue-300 to-blue-600 rounded-full flex items-center justify-center">
               <span className="text-2xl text-white font-bold">🏄‍♂️</span>
             </div>
-            <div>
+            <div className="flex-1">
               <h2 className="text-xl font-bold text-white">
                 {isSignedIn ? user?.name || 'Surf Explorer' : 'Guest User'}
               </h2>
@@ -69,6 +69,14 @@ export default function ProfilePage() {
                 {isSignedIn ? user?.email || 'Beginner Surfer' : 'Sign in to track your sessions'}
               </p>
             </div>
+            {!isSignedIn && (
+              <button 
+                onClick={() => router.push('/signin')}
+                className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 transition-colors rounded-full text-white font-medium"
+              >
+                Sign In
+              </button>
+            )}
           </div>
           
           <div className="grid grid-cols-3 gap-4 text-center">
