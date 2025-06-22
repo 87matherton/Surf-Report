@@ -2,6 +2,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { surfSpots, type SurfSpot } from '../data/spots';
+import MobileBottomNav from './MobileBottomNav';
 
 // Get popular surf spots for favorites (mix from different regions)
 const getFavoriteSpots = (): SurfSpot[] => {
@@ -34,21 +35,6 @@ const getFavoriteSpots = (): SurfSpot[] => {
   return availableSpots.slice(0, 12);
 };
 
-const SearchButton = () => (
-  <button className="absolute bg-white left-3 top-[13px] rounded-full size-[60px] border border-slate-200 flex items-center justify-center shadow-sm z-10">
-    <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  </button>
-);
-
-const UserAvatar = () => (
-  <div className="absolute right-3 top-[13px] size-[60px] rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center z-10">
-    <span className="text-white text-xl font-bold">👤</span>
-  </div>
-);
-
 const SurfSpotRow = ({ spot }: { spot: SurfSpot }) => (
   <div className="flex items-center justify-between py-4 px-4 bg-white border-b border-gray-100">
     <div className="flex-1">
@@ -72,59 +58,40 @@ const SurfSpotRow = ({ spot }: { spot: SurfSpot }) => (
   </div>
 );
 
-const BottomTabBar = () => {
-  const router = useRouter();
-  
-  return (
-    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[377px] z-10">
-      <div className="bg-white rounded-full border border-slate-300 flex">
-        <button 
-          className="flex-1 py-3 px-5 font-medium text-sm text-black hover:bg-slate-50"
-          onClick={() => router.push('/')}
-        >
-          Map
-        </button>
-        <button className="flex-1 py-3 px-5 bg-slate-100 rounded-full font-medium text-sm text-black">
-          Favorites
-        </button>
-        <button 
-          className="flex-1 py-3 px-5 font-medium text-sm text-black hover:bg-slate-50"
-          onClick={() => router.push('/forecast')}
-        >
-          Forecast
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const FavoritesPage = () => {
   const favoriteSpots = getFavoriteSpots();
   
   return (
-    <div className="fixed inset-0 w-full h-full overflow-hidden bg-gray-50">
-      <div className="relative w-full h-full">
+    <div className="min-h-screen relative">
+      {/* Subtle coastal background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-sky-100 via-blue-50 to-blue-100"></div>
+      
+      {/* Content */}
+      <div className="relative z-10">
         {/* Header */}
-        <SearchButton />
-        <UserAvatar />
+        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-20">
+          <div className="max-w-md mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Favorites</h1>
+                <p className="text-gray-600 text-sm">Your saved surf spots</p>
+              </div>
+            </div>
+          </div>
+        </div>
         
         {/* Content */}
-        <div className="pt-20 pb-24 h-full overflow-y-auto">
-          <div className="px-4 mb-4">
-            <h1 className="text-2xl font-bold text-slate-800">Favorites</h1>
-            <p className="text-slate-600 text-sm">Your saved surf spots</p>
-          </div>
-          
+        <div className="max-w-md mx-auto px-4 py-6 pb-24">
           {/* Surf Spots List */}
-          <div className="bg-white mx-4 rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-sm overflow-hidden border border-white/20">
             {favoriteSpots.map((spot) => (
               <SurfSpotRow key={spot.id} spot={spot} />
             ))}
           </div>
         </div>
         
-        {/* Bottom Navigation */}
-        <BottomTabBar />
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav />
       </div>
     </div>
   );

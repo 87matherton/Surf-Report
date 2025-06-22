@@ -3,6 +3,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import { surfSpots, type SurfSpot } from '../src/data/spots';
 import SearchModal from '../src/components/SearchModal';
+import MobileBottomNav from '../src/components/MobileBottomNav';
 
 // Get all West Coast surf spots (Washington, Oregon, California)
 const getWestCoastSpots = (): SurfSpot[] => {
@@ -77,31 +78,6 @@ const SurfSpotCard = ({ spot, isSelected = false }: { spot: SurfSpot; isSelected
     </div>
   </div>
 );
-
-const BottomTabBar = () => {
-  const router = useRouter();
-  return (
-    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[377px] z-10">
-      <div className="bg-white rounded-full border border-slate-300 flex">
-        <button className="flex-1 py-3 px-5 bg-slate-100 rounded-full font-medium text-sm text-black">
-          Map
-        </button>
-        <button 
-          className="flex-1 py-3 px-5 font-medium text-sm text-black hover:bg-slate-50"
-          onClick={() => router.push('/favorites')}
-        >
-          Favorites
-        </button>
-        <button 
-          className="flex-1 py-3 px-5 font-medium text-sm text-black hover:bg-slate-50"
-          onClick={() => router.push('/forecast')}
-        >
-          Forecast
-        </button>
-      </div>
-    </div>
-  );
-};
 
 const SurfSpotCards = () => {
   const westCoastSpots = getWestCoastSpots().slice(0, 3); // Show first 3 spots
@@ -381,7 +357,6 @@ export default function HomePage() {
         <WestCoastMap />
         <CenterLocationPin />
         <SurfSpotCards />
-        <BottomTabBar />
         
         {/* Search Modal */}
         <SearchModal 
@@ -389,6 +364,9 @@ export default function HomePage() {
           onClose={() => setIsSearchModalOpen(false)}
           onSpotSelect={handleSpotSelect}
         />
+        
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav />
       </div>
     </div>
   );

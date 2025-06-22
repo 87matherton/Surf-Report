@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { surfSpots } from '../../src/data/spots';
 import SearchModal from '../../src/components/SearchModal';
+import MobileBottomNav from '../../src/components/MobileBottomNav';
 
 export default function ForecastPage() {
   const [selectedSpot, setSelectedSpot] = useState(surfSpots[0]);
@@ -193,6 +194,9 @@ export default function ForecastPage() {
               setIsSearchModalOpen(false);
             }}
           />
+          
+          {/* Mobile Bottom Navigation */}
+          <MobileBottomNav />
         </div>
       </div>
     </div>
