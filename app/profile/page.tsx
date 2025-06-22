@@ -1,7 +1,7 @@
 'use client';
 
 import BottomNavigation from '../../src/components/BottomNavigation';
-import SurfBackground from '../../src/components/SurfBackgroundNoSSR';
+import SurfBackground from '../../src/components/SurfBackground';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
