@@ -44,7 +44,10 @@ export default function SignInPage() {
   };
 
   return (
-    <SurfBackground category="sunset">
+    <SurfBackground 
+      videoUrl="https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4"
+      videoPoster="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&h=1080&fit=crop&q=80"
+    >
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           {/* Header */}

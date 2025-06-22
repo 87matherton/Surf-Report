@@ -4,7 +4,7 @@ export interface SurfBackgroundImage {
   id: string;
   url: string;
   description: string;
-  category: 'wave' | 'sunset' | 'tropical' | 'aerial' | 'underwater';
+  category: 'wave' | 'sunset' | 'tropical' | 'aerial' | 'underwater' | 'auth';
   photographer?: string;
   fallbackColor: string;
 }
@@ -73,6 +73,24 @@ export const surfBackgrounds: SurfBackgroundImage[] = [
     category: 'underwater',
     photographer: 'Unsplash',
     fallbackColor: '#0c4a6e'
+  },
+  
+  // Auth Pages - Serene Beach Scenes
+  {
+    id: 'serene-beach-1',
+    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&h=1080&fit=crop&q=80',
+    description: 'Serene beach with gentle waves and mountains',
+    category: 'auth',
+    photographer: 'Sean Oulashin',
+    fallbackColor: '#0ea5e9'
+  },
+  {
+    id: 'peaceful-ocean-1',
+    url: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=1920&h=1080&fit=crop&q=80',
+    description: 'Peaceful ocean scene with soft waves',
+    category: 'auth',
+    photographer: 'Unsplash',
+    fallbackColor: '#0284c7'
   }
 ];
 
@@ -121,6 +139,8 @@ export const createFallbackGradient = (image: SurfBackgroundImage): string => {
       return `linear-gradient(135deg, ${baseColor} 0%, #1e3a8a 25%, #1e40af 50%, #1d4ed8 75%, #2563eb 100%)`;
     case 'aerial':
       return `linear-gradient(135deg, #0ea5e9 0%, ${baseColor} 25%, #0284c7 50%, #0369a1 75%, #075985 100%)`;
+    case 'auth':
+      return `linear-gradient(135deg, #0ea5e9 0%, ${baseColor} 25%, #0284c7 50%, #0369a1 75%, #164e63 100%)`;
     default: // wave
       return `linear-gradient(135deg, #0ea5e9 0%, ${baseColor} 25%, #0369a1 50%, #075985 75%, #0c4a6e 100%)`;
   }

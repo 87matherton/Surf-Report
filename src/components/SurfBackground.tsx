@@ -7,35 +7,85 @@ interface SurfBackgroundProps {
   children: React.ReactNode;
   className?: string;
   category?: SurfBackgroundImage['category']; // Optional: force a specific category
+  videoUrl?: string; // Optional: use a video background instead
+  videoPoster?: string; // Optional: poster image for video
 }
 
-const SurfBackground: React.FC<SurfBackgroundProps> = ({ children, className = '', category }) => {
+const SurfBackground: React.FC<SurfBackgroundProps> = ({ 
+  children, 
+  className = '', 
+  category, 
+  videoUrl,
+  videoPoster 
+}) => {
   const [currentImage, setCurrentImage] = useState<SurfBackgroundImage | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
-    // Get background image based on category or time of day
-    const selectedImage = category 
-      ? getSurfBackgroundByCategory(category)
-      : getTimeBasedSurfBackground();
-    
-    setCurrentImage(selectedImage);
-    setImageLoaded(false);
-    
-    // Preload the image
-    const img = new Image();
-    img.onload = () => setImageLoaded(true);
-    img.onerror = () => {
-      console.warn('Failed to load background image, using fallback');
+    if (!videoUrl) {
+      // Get background image based on category or time of day
+      const selectedImage = category 
+        ? getSurfBackgroundByCategory(category)
+        : getTimeBasedSurfBackground();
+      
+      setCurrentImage(selectedImage);
       setImageLoaded(false);
-    };
-    img.src = selectedImage.url;
-  }, [category]);
+      
+      // Preload the image
+      const img = new Image();
+      img.onload = () => setImageLoaded(true);
+      img.onerror = () => {
+        console.warn('Failed to load background image, using fallback');
+        setImageLoaded(false);
+      };
+      img.src = selectedImage.url;
+    }
+  }, [category, videoUrl]);
+
+  const handleVideoLoad = () => {
+    setVideoLoaded(true);
+  };
+
+  const handleVideoError = () => {
+    console.warn('Failed to load background video, using fallback');
+    setVideoLoaded(false);
+  };
 
   return (
     <div className={`relative min-h-screen ${className}`}>
-      {/* Real Surf Background Image */}
-      {currentImage && (
+      {/* Video Background */}
+      {videoUrl && (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={videoPoster}
+          onLoadedData={handleVideoLoad}
+          onError={handleVideoError}
+          onCanPlay={() => setVideoLoaded(true)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            videoLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            filter: 'brightness(0.7)', // Slightly darken video for better text readability
+          }}
+        >
+          <source src={videoUrl} type="video/mp4" />
+          {/* Fallback message */}
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-blue-800 flex items-center justify-center">
+            <p className="text-white/70 text-center">
+              Your browser does not support video backgrounds.<br />
+              Loading image fallback...
+            </p>
+          </div>
+        </video>
+      )}
+
+      {/* Image Background (when not using video) */}
+      {!videoUrl && currentImage && (
         <div 
           className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
@@ -49,7 +99,7 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({ children, className = '
       {/* Fallback Ocean Wave Gradient Background (shows while loading) */}
       <div 
         className={`absolute inset-0 transition-opacity duration-1000 ${
-          imageLoaded ? 'opacity-0' : 'opacity-100'
+          (videoUrl ? videoLoaded : imageLoaded) ? 'opacity-0' : 'opacity-100'
         }`}
         style={{
           background: currentImage 

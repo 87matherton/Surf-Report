@@ -59,7 +59,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <SurfBackground category="tropical">
+    <SurfBackground category="auth">
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           {/* Header */}
