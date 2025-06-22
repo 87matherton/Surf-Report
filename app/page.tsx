@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { surfSpots } from '../src/data/spots';
 import { useLiveData, useLiveDataFormatters } from '../src/hooks/useLiveData';
 import { getQualityColor, getQualityEmoji } from '../src/utils/surfUtils';
+import { useAuth } from '../src/hooks/useAuth';
 import BottomNavigation from '../src/components/BottomNavigation';
 import SearchModal from '../src/components/SearchModal';
 import SearchButton from '../src/components/SearchButton';
@@ -11,6 +13,9 @@ import SurfBackground from '../src/components/SurfBackground';
 import BackgroundSelector from '../src/components/BackgroundSelector';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user, isSignedIn, signOut } = useAuth();
+  
   const { 
     liveDataState, 
     updateSpots, 
@@ -84,6 +89,11 @@ export default function HomePage() {
                     {liveDataState.isLoading ? 'Updating...' : `Updated ${formatLastUpdated(liveDataState.lastUpdated)}`}
                   </span>
                 </div>
+                {isSignedIn && (
+                  <span className="text-white/60 text-xs">
+                    Welcome, {user?.name}!
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -91,6 +101,24 @@ export default function HomePage() {
                 onCategoryChange={setBackgroundCategory}
               />
               <SearchButton onClick={() => setIsSearchModalOpen(true)} />
+              
+              {/* Auth Buttons */}
+              {isSignedIn ? (
+                <button
+                  onClick={signOut}
+                  className="px-3 py-2 text-sm bg-white/20 hover:bg-white/30 transition-colors rounded-full text-white/90"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <button
+                  onClick={() => router.push('/signin')}
+                  className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 transition-colors rounded-full text-white font-medium"
+                >
+                  Sign In
+                </button>
+              )}
+              
               <button
                 onClick={handleRefresh}
                 disabled={liveDataState.isLoading}
