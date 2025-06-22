@@ -71,7 +71,7 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
             videoLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            filter: 'brightness(0.7)',
+            filter: 'brightness(0.8)', // Slightly less darkening to show video better
           }}
         >
           <source src={videoUrl} type="video/mp4" />
@@ -90,20 +90,20 @@ const SurfBackground: React.FC<SurfBackgroundProps> = ({
         />
       )}
 
-      {/* Fallback gradient - always visible initially */}
-      <div 
-        className={`absolute inset-0 transition-opacity duration-1000 ${
-          (videoUrl ? videoLoaded : imageLoaded) ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{
-          background: currentImage 
-            ? createFallbackGradient(currentImage)
-            : `linear-gradient(135deg, #0ea5e9 0%, #0284c7 25%, #0369a1 50%, #075985 75%, #0c4a6e 100%)`,
-        }}
-      />
+      {/* Fallback gradient - only show when video/image not loaded */}
+      {!(videoUrl && videoLoaded) && !(currentImage && imageLoaded) && (
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: currentImage 
+              ? createFallbackGradient(currentImage)
+              : `linear-gradient(135deg, #0ea5e9 0%, #0284c7 25%, #0369a1 50%, #075985 75%, #0c4a6e 100%)`,
+          }}
+        />
+      )}
       
-      {/* Glass effects */}
-      <div className="absolute inset-0 bg-blue-900/30" />
+      {/* Glass effects - lighter when video is playing */}
+      <div className={`absolute inset-0 ${videoUrl && videoLoaded ? 'bg-blue-900/10' : 'bg-blue-900/30'}`} />
       <div className="absolute inset-0 backdrop-blur-sm bg-white/15" />
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/5 to-white/15" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
