@@ -364,26 +364,32 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative w-full h-screen bg-slate-100 overflow-hidden">
-      <SearchButton onClick={() => setIsSearchModalOpen(true)} />
-      <UserAvatar />
-      <ZoomControls 
-        zoom={1} 
-        onZoomIn={() => {}} 
-        onZoomOut={() => {}} 
-        onReset={() => {}} 
-      />
-      <WestCoastMap />
-      <CenterLocationPin />
-      <SurfSpotCards />
-      <BottomTabBar />
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Subtle coastal background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-sky-100 via-blue-50 to-blue-100"></div>
       
-      {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchModalOpen}
-        onClose={() => setIsSearchModalOpen(false)}
-        onSpotSelect={handleSpotSelect}
-      />
+      {/* Content */}
+      <div className="relative z-10 w-full h-full">
+        <SearchButton onClick={() => setIsSearchModalOpen(true)} />
+        <UserAvatar />
+        <ZoomControls 
+          zoom={1} 
+          onZoomIn={() => {}} 
+          onZoomOut={() => {}} 
+          onReset={() => {}} 
+        />
+        <WestCoastMap />
+        <CenterLocationPin />
+        <SurfSpotCards />
+        <BottomTabBar />
+        
+        {/* Search Modal */}
+        <SearchModal 
+          isOpen={isSearchModalOpen}
+          onClose={() => setIsSearchModalOpen(false)}
+          onSpotSelect={handleSpotSelect}
+        />
+      </div>
     </div>
   );
 } 
