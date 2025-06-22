@@ -72,7 +72,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSpotSelect
     if (onSpotSelect) {
       onSpotSelect(spot);
     } else {
-      router.push(`/spot/${spot.id}`);
+      router.push(`/forecast?spot=${spot.id}`);
     }
     onClose();
   };

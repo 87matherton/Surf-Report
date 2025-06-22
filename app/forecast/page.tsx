@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { surfSpots } from '../../src/data/spots';
 import { useLiveData, useLiveDataFormatters } from '../../src/hooks/useLiveData';
 import { weatherService } from '../../src/services/weatherService';
@@ -11,6 +12,7 @@ import SearchButton from '../../src/components/SearchButton';
 import SurfBackground from '../../src/components/SurfBackgroundNoSSR';
 
 export default function ForecastPage() {
+  const searchParams = useSearchParams();
   const { 
     liveDataState, 
     updateSpots, 
@@ -21,7 +23,19 @@ export default function ForecastPage() {
   
   const { formatLastUpdated, getConditionsBadgeColor } = useLiveDataFormatters();
 
-  const [selectedSpot, setSelectedSpot] = useState(surfSpots[0]);
+  // Initialize selectedSpot based on URL parameter or default to first spot
+  const getInitialSpot = () => {
+    const spotId = searchParams?.get('spot');
+    if (spotId) {
+      const foundSpot = surfSpots.find(spot => spot.id === spotId);
+      if (foundSpot) {
+        return foundSpot;
+      }
+    }
+    return surfSpots[0];
+  };
+
+  const [selectedSpot, setSelectedSpot] = useState(getInitialSpot());
   const [forecastData, setForecastData] = useState<any[]>([]);
   const [isLoadingForecast, setIsLoadingForecast] = useState(false);
   const [activeTab, setActiveTab] = useState('7-day');
