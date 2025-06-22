@@ -1,10 +1,12 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 
 // Disable SSR for SurfBackground to avoid hydration mismatch
 const SurfBackground = dynamic(() => import('./SurfBackground'), {
   ssr: false,
   loading: () => (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen w-full overflow-hidden" style={{ minHeight: '100vh', width: '100vw' }}>
       {/* Loading fallback that matches the expected structure */}
       <div 
         className="absolute inset-0"
@@ -13,10 +15,13 @@ const SurfBackground = dynamic(() => import('./SurfBackground'), {
         }}
       />
       <div className="absolute inset-0 bg-blue-900/30" />
-      <div className="absolute inset-0 backdrop-blur-sm bg-white/15" />
+      <div className="absolute inset-0 bg-white/15" />
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/5 to-white/15" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
+      
+      {/* Content placeholder */}
+      <div className="relative z-10"></div>
     </div>
   )
 });

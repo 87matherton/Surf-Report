@@ -83,7 +83,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <SurfBackground>
+    <SurfBackground category="sunset">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4">

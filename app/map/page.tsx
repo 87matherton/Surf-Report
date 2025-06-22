@@ -9,7 +9,7 @@ import { useState } from 'react';
 export default function MapPage() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   return (
-    <SurfBackground className="relative overflow-hidden">
+    <SurfBackground category="tropical" className="relative overflow-hidden">
       {/* Background Ocean Pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-300/20 to-blue-700/20"></div>
