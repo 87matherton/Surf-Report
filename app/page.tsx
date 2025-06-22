@@ -8,6 +8,7 @@ import BottomNavigation from '../src/components/BottomNavigation';
 import SearchModal from '../src/components/SearchModal';
 import SearchButton from '../src/components/SearchButton';
 import SurfBackground from '../src/components/SurfBackground';
+import BackgroundSelector from '../src/components/BackgroundSelector';
 
 export default function HomePage() {
   const { 
@@ -24,6 +25,7 @@ export default function HomePage() {
   const [spots, setSpots] = useState(surfSpots);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [backgroundCategory, setBackgroundCategory] = useState<any>(undefined);
 
   // Popular spot IDs to feature
   const popularSpotIds = ['nc1', 'sc1', 'cc1', 'nc3'];
@@ -68,7 +70,7 @@ export default function HomePage() {
   const updatedPopularSpots = popularSpots.map(getUpdatedSpot);
 
   return (
-    <SurfBackground>
+    <SurfBackground category={backgroundCategory}>
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="max-w-md mx-auto px-4 py-4">
@@ -85,6 +87,9 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <BackgroundSelector 
+                onCategoryChange={setBackgroundCategory}
+              />
               <SearchButton onClick={() => setIsSearchModalOpen(true)} />
               <button
                 onClick={handleRefresh}
